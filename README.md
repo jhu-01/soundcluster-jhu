@@ -21,4 +21,4 @@ Boostcamp Web & Mobile SNU 2026 — Solo Project
 # 👥 Author & License
 - Author: 정현우 / jhu-01
 
-- License: **MIT(LICENSE)**
+- License: **[MIT](LICENSE)**
