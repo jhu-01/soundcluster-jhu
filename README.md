@@ -1,4 +1,25 @@
-# SoundCluster
+# 🌌 SoundCluster
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-LLM 기반 다차원 음악 성향 분석을 통한 맞춤형 음악 추천 및 공유 플랫폼
+A music analytics dashboard leveraging Gemini LLM to map multi-dimensional emotional data from tracks and lyrics into an immersive 3D space (R3F/WebGL).
 
+Boostcamp Web & Mobile SNU 2026 — Solo Project
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+* **Frontend Layer:** React 18 · TypeScript · Vite · React Three Fiber (R3F) · Three.js
+* **Backend Layer:** Express.js (Node.js) · SSE (Server-Sent Events)
+* **Shared Layer:** Common Constants · Strict Type Interfaces · Pure Utility Functions
+* **LLM Integration:** Google Official `@google/genai` SDK 
+* **Data Storage:** MySQL Database 
+* **Styling & Optimization:** CSS Modules*
+
+---
+
+# 👥 Author & License
+- Author: 정현우 / jhu-01
+
+- License: **MIT(LICENSE)**
+>>>>>>> 041fab9 (docs:프로젝트 구조 정의 및 AI 에이전트 구동 지침 수립)
