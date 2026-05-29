@@ -22,4 +22,3 @@ Boostcamp Web & Mobile SNU 2026 — Solo Project
 - Author: 정현우 / jhu-01
 
 - License: **MIT(LICENSE)**
->>>>>>> 041fab9 (docs:프로젝트 구조 정의 및 AI 에이전트 구동 지침 수립)
