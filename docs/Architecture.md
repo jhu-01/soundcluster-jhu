@@ -30,8 +30,8 @@ soundcluster/
 │   ├── types/                       # 5차원 감성 벡터, 스포티파이 메타데이터 Strict Interface
 │   └── utils/                       # 순수 함수 기반 유틸리티 (가사 파싱, 데이터 정규화 연산)
 │
-├── docs/                            # 프로젝트 문서 저장소 (★ 신설)
-│   ├── GEMINI.md                    # AI 에이전트 자율 가드레일 지침서
+├── docs/                            # 프로젝트 문서 저장소
+│   ├── gemini.md                    # AI 에이전트 자율 가드레일 지침서
 │   └── architecture.md              # 본 시스템 구조 명세 문서 (현재 파일)
 │
 ├── .gitignore                       # node_modules 및 .env 등 형상 관리 제외 설정
