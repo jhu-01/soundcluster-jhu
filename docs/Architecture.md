@@ -43,7 +43,7 @@ soundcluster/
 │
 ├── .gitignore
 ├── package.json
-├── package-lock.json
+├── pnpm-lock.yaml
 └── README.md
 ```
 

@@ -1,4 +1,4 @@
-- [ ] #2 [Env] Node.js 환경 구축 및 패키지 매니저(pnpm) 초기화
+- [x] #2 [Env] Node.js 환경 구축 및 패키지 매니저(pnpm) 초기화
   <details>
   <summary>🔍 이슈 내용 보기</summary>
 
@@ -6,10 +6,10 @@
 로컬 컴퓨터에 아무런 개발 도구가 없는 상태에서 출발하여, 프로젝트 구동을 위한 최신 Node.js 환경을 세팅하고 고속 패키지 매니저인 pnpm 인프라를 구축합니다.
 
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] Node.js 공식 LTS 버전(v22 이상) 설치 및 터미널 검증 (`node -v`)
-- [ ] Corepack 활성화 또는 글로벌 명령어로 pnpm v9 이상 설치 (`npm i -g pnpm`)
-- [ ] 프로젝트 루트 디렉토리에서 `pnpm init` 실행하여 기본 `package.json` 생성
-- [ ] `.gitignore` 파일 생성하여 `node_modules` 및 환경변수 보안 격리 설정
+- [x] Node.js 공식 LTS 버전(v22 이상) 설치 및 터미널 검증 (`node -v`)
+- [x] Corepack 활성화 또는 글로벌 명령어로 pnpm v9 이상 설치 (`npm i -g pnpm`)
+- [x] 프로젝트 루트 디렉토리에서 `pnpm init` 실행하여 기본 `package.json` 생성
+- [x] `.gitignore` 파일 생성하여 `node_modules` 및 환경변수 보안 격리 설정
 
   </details>
 - [ ] #3 [Feat] Express 기본 서버 구동 및 헬스체크 엔드포인트 구현
