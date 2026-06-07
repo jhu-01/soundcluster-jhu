@@ -1,12 +1,13 @@
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { useState } from "react";
 import { Vector3 } from "three";
 
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 import { mapEmotionVectorsToScenePointData } from "../utils/mds";
 import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
-import { StarNode } from "./StarNode";
+import { StarNodeCollection } from "./StarNodeCollection";
 import type { StarNodeData } from "./StarNode";
 
 interface MockTrack {
@@ -100,12 +101,14 @@ const clusterFocusPoint = trackPoints.reduce((focusPoint, point) => {
 }, new Vector3()).divideScalar(trackPoints.length);
 
 function TrackNodes() {
+  const [selectedTrack, setSelectedTrack] = useState<StarNodeData | null>(null);
+
   return (
-    <group>
-      {trackPoints.map((point, index) => (
-        <StarNode index={index} key={point.id} node={point} />
-      ))}
-    </group>
+    <StarNodeCollection
+      nodes={trackPoints}
+      onSelectNode={setSelectedTrack}
+      selectedNodeId={selectedTrack?.id ?? null}
+    />
   );
 }
 

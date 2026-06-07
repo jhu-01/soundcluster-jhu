@@ -16,7 +16,9 @@ export interface StarNodeData {
 
 interface StarNodeProps {
   index: number;
+  isSelected: boolean;
   node: StarNodeData;
+  onSelect: (node: StarNodeData) => void;
 }
 
 const NODE_SETTLE_SPEED = 2.8;
@@ -35,7 +37,12 @@ const createEntryPosition = (index: number): Vector3 => {
   return new Vector3(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
 };
 
-export function StarNode({ index, node }: StarNodeProps) {
+export function StarNode({
+  index,
+  isSelected,
+  node,
+  onSelect,
+}: StarNodeProps) {
   const groupRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
   const materialRef = useRef<MeshStandardMaterial>(null);
@@ -56,20 +63,27 @@ export function StarNode({ index, node }: StarNodeProps) {
 
     const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
     const hoverEasing = 1 - Math.exp(-NODE_HOVER_SPEED * delta);
-    const targetScale = isHovered ? node.scale * 1.38 : node.scale;
+    const isHighlighted = isHovered || isSelected;
+    const targetScale = isHighlighted ? node.scale * 1.42 : node.scale;
     const nextScale = mesh.scale.x + (targetScale - mesh.scale.x) * hoverEasing;
 
     group.position.lerp(targetPosition, settleEasing);
     mesh.scale.setScalar(nextScale);
-    material.color.lerp(isHovered ? hoverColor : baseColor, hoverEasing);
-    material.emissive.lerp(isHovered ? hoverColor : baseColor, hoverEasing);
-    material.emissiveIntensity = isHovered ? node.intensity * 1.72 : node.intensity;
+    material.color.lerp(isHighlighted ? hoverColor : baseColor, hoverEasing);
+    material.emissive.lerp(isHighlighted ? hoverColor : baseColor, hoverEasing);
+    material.emissiveIntensity = isHighlighted
+      ? node.intensity * 1.72
+      : node.intensity;
   });
 
   return (
     <group
       ref={groupRef}
       position={entryPosition}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect(node);
+      }}
       onPointerOut={() => setIsHovered(false)}
       onPointerOver={() => setIsHovered(true)}
     >
@@ -87,7 +101,7 @@ export function StarNode({ index, node }: StarNodeProps) {
         <Text
           anchorX="center"
           anchorY="middle"
-          color={isHovered ? LABEL_HOVER_COLOR : LABEL_COLOR}
+          color={isHovered || isSelected ? LABEL_HOVER_COLOR : LABEL_COLOR}
           fontSize={0.22}
           maxWidth={1.6}
           outlineColor="#03110f"
