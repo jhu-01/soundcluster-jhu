@@ -1,0 +1,48 @@
+.panel {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 10;
+  display: grid;
+  width: min(320px, calc(100vw - 36px));
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(94, 234, 212, 0.34);
+  border-radius: 8px;
+  color: #e6fffb;
+  background: rgba(6, 18, 15, 0.82);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  font-size: 13px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 3px;
+  color: #9fbab5;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: #cbd5e1;
+}
+
+.values span {
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.panel button {
+  justify-self: flex-start;
+  padding: 8px 10px;
+  border: 1px solid rgba(94, 234, 212, 0.38);
+  border-radius: 6px;
+  color: #05201d;
+  background: #5eead4;
+  font-weight: 800;
+  cursor: pointer;
+}

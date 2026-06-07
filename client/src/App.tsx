@@ -1,10 +1,96 @@
+import { useMemo, useState } from "react";
+
 import { StarsCanvas } from "./canvas/StarsCanvas";
+import { ShareModal } from "./components/ShareModal";
+import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
+import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
+import type { ClusterShareSnapshot } from "./types/shareSnapshot";
+import {
+  createShareSnapshotUrl,
+  readShareSnapshotFromLocation,
+} from "./utils/shareSnapshot";
+
+const createDefaultSnapshot = (): ClusterShareSnapshot => {
+  return {
+    version: 1,
+    selectedTrackId: null,
+    cameraPosition: [6.4, 4.8, 7.6],
+    cameraTarget: [0, 0, 0],
+    tracks: mockTracks,
+  };
+};
+
+const clampUnitValue = (value: number): number => {
+  return Math.max(0, Math.min(1, value));
+};
+
+const createMutatedSnapshot = (
+  snapshot: ClusterShareSnapshot,
+): ClusterShareSnapshot => {
+  const targetTrackId = snapshot.selectedTrackId ?? snapshot.tracks[0]?.id;
+
+  return {
+    ...snapshot,
+    selectedTrackId: targetTrackId ?? null,
+    tracks: snapshot.tracks.map((track) => {
+      if (track.id !== targetTrackId) {
+        return track;
+      }
+
+      return {
+        ...track,
+        emotions: {
+          ...track.emotions,
+          energy: clampUnitValue(track.emotions.energy + 0.11),
+          valence: clampUnitValue(track.emotions.valence - 0.09),
+          tension: clampUnitValue(track.emotions.tension + 0.13),
+        },
+      };
+    }),
+  };
+};
 
 export default function App() {
+  const initialSnapshot = useMemo(() => {
+    return readShareSnapshotFromLocation(window.location.search);
+  }, []);
+  const [snapshot, setSnapshot] = useState<ClusterShareSnapshot>(
+    initialSnapshot ?? createDefaultSnapshot(),
+  );
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const mutateSnapshot = () => {
+    const nextSnapshot = createMutatedSnapshot(snapshot);
+
+    window.history.replaceState(
+      null,
+      "",
+      createShareSnapshotUrl(nextSnapshot, window.location.href),
+    );
+    setSnapshot(nextSnapshot);
+  };
+
   return (
     <main className={styles.shell}>
-      <StarsCanvas />
+      <StarsCanvas onSnapshotChange={setSnapshot} snapshot={snapshot} />
+      <button
+        className={styles.shareButton}
+        onClick={() => setIsShareOpen(true)}
+        type="button"
+      >
+        Share
+      </button>
+      {import.meta.env.DEV ? (
+        <SnapshotDebugPanel
+          onMutateSnapshot={mutateSnapshot}
+          snapshot={snapshot}
+        />
+      ) : null}
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        snapshot={snapshot}
+      />
     </main>
   );
 }
