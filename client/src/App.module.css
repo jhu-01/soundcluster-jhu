@@ -10,6 +10,16 @@
   display: block;
 }
 
+.canvasFallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #d9fffb;
+  background: #06120f;
+  font-weight: 800;
+}
+
 .shareButton {
   position: fixed;
   right: 18px;

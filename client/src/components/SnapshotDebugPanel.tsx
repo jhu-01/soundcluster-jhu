@@ -28,6 +28,10 @@ export function SnapshotDebugPanel({
         <span className={styles.label}>selected</span>
         <strong>{selectedTrack.title}</strong>
       </div>
+      <div>
+        <span className={styles.label}>nodes</span>
+        <strong>{snapshot.tracks.length}</strong>
+      </div>
       <div className={styles.values}>
         <span>energy {formatVector(selectedTrack.emotions.energy)}</span>
         <span>valence {formatVector(selectedTrack.emotions.valence)}</span>

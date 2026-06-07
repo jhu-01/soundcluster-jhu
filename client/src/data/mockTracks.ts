@@ -7,7 +7,7 @@ export interface MockTrack {
   emotions: EmotionVector;
 }
 
-export const mockTracks: MockTrack[] = [
+const baseMockTracks: MockTrack[] = [
   {
     id: "midnight-circuit",
     title: "Midnight Circuit",
@@ -69,3 +69,52 @@ export const mockTracks: MockTrack[] = [
     },
   },
 ];
+
+const CLUSTER_VARIANT_COUNT = 50;
+
+const clampUnitValue = (value: number): number => {
+  return Math.max(0, Math.min(1, value));
+};
+
+const createVariantEmotionValue = (
+  value: number,
+  variantIndex: number,
+  offset: number,
+): number => {
+  const wave = Math.sin((variantIndex + 1) * offset) * 0.18;
+
+  return Number(clampUnitValue(value + wave).toFixed(3));
+};
+
+const createMockTrackVariants = (track: MockTrack): MockTrack[] => {
+  return Array.from({ length: CLUSTER_VARIANT_COUNT }, (_, variantIndex) => {
+    if (variantIndex === 0) {
+      return track;
+    }
+
+    return {
+      id: `${track.id}-${variantIndex + 1}`,
+      title: `${track.title} ${variantIndex + 1}`,
+      artist: track.artist,
+      emotions: {
+        energy: createVariantEmotionValue(track.emotions.energy, variantIndex, 0.73),
+        valence: createVariantEmotionValue(track.emotions.valence, variantIndex, 1.17),
+        tempoDensity: createVariantEmotionValue(
+          track.emotions.tempoDensity,
+          variantIndex,
+          0.91,
+        ),
+        spaceDepth: createVariantEmotionValue(
+          track.emotions.spaceDepth,
+          variantIndex,
+          1.39,
+        ),
+        tension: createVariantEmotionValue(track.emotions.tension, variantIndex, 1.61),
+      },
+    };
+  });
+};
+
+export const mockTracks: MockTrack[] = baseMockTracks.flatMap(
+  createMockTrackVariants,
+);

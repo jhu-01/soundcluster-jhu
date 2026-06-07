@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 
-import { StarsCanvas } from "./canvas/StarsCanvas";
 import { ShareModal } from "./components/ShareModal";
 import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
 import { mockTracks } from "./data/mockTracks";
@@ -10,6 +9,12 @@ import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
 } from "./utils/shareSnapshot";
+
+const StarsCanvas = lazy(() =>
+  import("./canvas/StarsCanvas").then((module) => ({
+    default: module.StarsCanvas,
+  })),
+);
 
 const createDefaultSnapshot = (): ClusterShareSnapshot => {
   return {
@@ -59,7 +64,7 @@ export default function App() {
     initialSnapshot ?? createDefaultSnapshot(),
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const mutateSnapshot = () => {
+  const mutateSnapshot = useCallback(() => {
     const nextSnapshot = createMutatedSnapshot(snapshot);
 
     window.history.replaceState(
@@ -68,11 +73,15 @@ export default function App() {
       createShareSnapshotUrl(nextSnapshot, window.location.href),
     );
     setSnapshot(nextSnapshot);
-  };
+  }, [snapshot]);
 
   return (
     <main className={styles.shell}>
-      <StarsCanvas onSnapshotChange={setSnapshot} snapshot={snapshot} />
+      <Suspense
+        fallback={<div className={styles.canvasFallback}>Loading 3D space</div>}
+      >
+        <StarsCanvas onSnapshotChange={setSnapshot} snapshot={snapshot} />
+      </Suspense>
       <button
         className={styles.shareButton}
         onClick={() => setIsShareOpen(true)}

@@ -1,6 +1,12 @@
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, type ElementRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type ElementRef,
+} from "react";
 
 import { mapEmotionVectorToScenePoint } from "../../../shared/utils/emotionToPoint.js";
 import { GridBase } from "./GridBase";
@@ -16,6 +22,19 @@ interface TrackPoint {
   color: string;
   scale: number;
 }
+
+const CANVAS_DPR: [number, number] = [1, 1.5];
+const CANVAS_GL = { antialias: true, alpha: false };
+const CAMERA_FOV = 48;
+const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 18, 18];
+const SELECTED_NODE_SCALE_MULTIPLIER = 1.34;
+const STAR_FIELD_CONFIG = {
+  radius: 64,
+  depth: 34,
+  count: 1400,
+  factor: 4,
+  speed: 0.35,
+} as const;
 
 const createTrackPoint = (track: ClusterShareTrack): TrackPoint => {
   const scenePoint = mapEmotionVectorToScenePoint(track.emotions);
@@ -42,6 +61,12 @@ function TrackNodes({
   const trackPoints = useMemo(() => {
     return tracks.map(createTrackPoint);
   }, [tracks]);
+  const handleSelectTrack = useCallback(
+    (trackId: string) => {
+      onSelectTrack(trackId);
+    },
+    [onSelectTrack],
+  );
 
   return (
     <group>
@@ -50,12 +75,15 @@ function TrackNodes({
           key={point.id}
           onClick={(event) => {
             event.stopPropagation();
-            onSelectTrack(point.id);
+            handleSelectTrack(point.id);
           }}
           position={point.position}
-          scale={point.id === selectedTrackId ? 1.34 : 1}
+          scale={
+            point.scale *
+            (point.id === selectedTrackId ? SELECTED_NODE_SCALE_MULTIPLIER : 1)
+          }
         >
-          <sphereGeometry args={[point.scale, 32, 32]} />
+          <sphereGeometry args={NODE_GEOMETRY_ARGS} />
           <meshStandardMaterial
             color={point.color}
             emissive={point.color}
@@ -114,35 +142,40 @@ interface StarsCanvasProps {
 }
 
 export function StarsCanvas({ onSnapshotChange, snapshot }: StarsCanvasProps) {
-  const updateSelectedTrack = (selectedTrackId: string) => {
-    onSnapshotChange({
-      ...snapshot,
-      selectedTrackId,
-    });
-  };
-
-  const updateCamera = (
-    cameraPosition: Vector3Tuple,
-    cameraTarget: Vector3Tuple,
-  ) => {
-    onSnapshotChange({
-      ...snapshot,
-      cameraPosition,
-      cameraTarget,
-    });
-  };
+  const cameraSettings = useMemo(() => {
+    return { position: snapshot.cameraPosition, fov: CAMERA_FOV };
+  }, [snapshot.cameraPosition]);
+  const updateSelectedTrack = useCallback(
+    (selectedTrackId: string) => {
+      onSnapshotChange({
+        ...snapshot,
+        selectedTrackId,
+      });
+    },
+    [onSnapshotChange, snapshot],
+  );
+  const updateCamera = useCallback(
+    (cameraPosition: Vector3Tuple, cameraTarget: Vector3Tuple) => {
+      onSnapshotChange({
+        ...snapshot,
+        cameraPosition,
+        cameraTarget,
+      });
+    },
+    [onSnapshotChange, snapshot],
+  );
 
   return (
     <Canvas
-      camera={{ position: snapshot.cameraPosition, fov: 48 }}
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: false }}
+      camera={cameraSettings}
+      dpr={CANVAS_DPR}
+      gl={CANVAS_GL}
     >
       <color attach="background" args={["#06120f"]} />
       <ambientLight intensity={0.54} />
       <directionalLight position={[6, 8, 5]} intensity={1.35} />
       <pointLight position={[-5, 2, -3]} intensity={1.25} color="#22d3ee" />
-      <Stars radius={64} depth={34} count={1400} factor={4} fade speed={0.35} />
+      <Stars {...STAR_FIELD_CONFIG} fade />
       <GridBase />
       <TrackNodes
         onSelectTrack={updateSelectedTrack}

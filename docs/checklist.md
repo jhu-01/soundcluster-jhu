@@ -357,7 +357,7 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 
   </details>
 
-- [ ] #25 [Perf] R3F 렌더링 및 번들 크기 최적화
+- [x] #25 [Perf] R3F 렌더링 및 번들 크기 최적화
   <details>
   <summary>🔍 작업 내용 보기</summary>
 
@@ -365,13 +365,13 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 Three/R3F 도입 이후 production build에서 큰 chunk 경고가 발생하므로, 렌더링 성능과 초기 로딩 비용을 줄입니다.
 
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] `StarsCanvas` lazy loading 또는 route-level code splitting 재적용
-- [ ] 반복 생성되는 Three 객체를 `useMemo`, `useRef`로 고정
-- [ ] 노드 수 증가 시 FPS 저하 여부 확인
-- [ ] 필요 시 instancing 적용 후보 검토
+- [x] `StarsCanvas` lazy loading 또는 route-level code splitting 재적용
+- [x] 반복 생성되는 Three 객체를 `useMemo`, `useRef`로 고정
+- [x] 노드 수 증가 시 FPS 저하 여부 확인
+- [x] 필요 시 instancing 적용 후보 검토
 
 ## ✅ 검증 방법
-- [ ] `corepack pnpm run build`에서 초기 chunk 크기 확인
-- [ ] 브라우저에서 50개 이상 노드 렌더링 시 조작감 확인
+- [x] `corepack pnpm run build`에서 초기 chunk 크기 확인
+- [x] 브라우저에서 50개 이상 노드 렌더링 시 조작감 확인
 
   </details>
