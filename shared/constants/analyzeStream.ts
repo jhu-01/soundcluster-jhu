@@ -11,6 +11,8 @@ export const ANALYZE_STREAM_HEADERS = {
 } as const;
 
 export const ANALYZE_STREAM_RETRY_MS = 3000;
+export const ANALYZE_CACHE_HIT_MESSAGE =
+  "Cached analysis found. Streaming stored vector immediately.";
 
 export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
   {
@@ -87,3 +89,7 @@ export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
     },
   },
 ];
+
+export const ANALYZE_CACHE_MISS_EVENTS = ANALYZE_STREAM_EVENTS.filter(
+  (event) => event.status !== "done",
+);

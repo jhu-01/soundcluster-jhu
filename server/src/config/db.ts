@@ -6,6 +6,7 @@ import {
   DATABASE_ENV_KEYS,
 } from "../../../shared/constants/database.js";
 import { readNumberEnv, readStringEnv } from "./env.js";
+import { createAnalysisCacheTableSql } from "../database/schema.js";
 
 const databasePoolOptions: PoolOptions = {
   host: readStringEnv(DATABASE_ENV_KEYS.host, DATABASE_DEFAULT_CONFIG.host),
@@ -26,6 +27,7 @@ export const checkDatabaseConnection = async (): Promise<void> => {
 
   try {
     await connection.ping();
+    await connection.query(createAnalysisCacheTableSql);
     console.log(DATABASE_CONNECTED_MESSAGE);
   } finally {
     connection.release();

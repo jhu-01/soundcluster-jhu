@@ -17,3 +17,4 @@ export const DATABASE_DEFAULT_CONFIG = {
 } as const;
 
 export const DATABASE_CONNECTED_MESSAGE = "Database Connected!";
+export const ANALYSIS_CACHE_TABLE_NAME = "analysis_cache";
