@@ -2,6 +2,12 @@ import express from "express";
 import type { Server } from "node:http";
 
 import { checkDatabaseConnection } from "./config/db.js";
+import { generateGeminiText } from "./config/gemini.js";
+import {
+  GEMINI_RESPONSE_LOG_PREFIX,
+  GEMINI_TEST_PROMPT,
+  GEMINI_TEST_ROUTE,
+} from "../../shared/constants/gemini.js";
 import {
   SERVER_DEFAULT_PORT,
   SERVER_HEALTH_RESPONSE,
@@ -24,10 +30,29 @@ const resolveServerPort = (value: string | undefined): number => {
   return port;
 };
 
+const resolveErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+};
+
 export const app = express();
 
 app.get(SERVER_HEALTH_ROUTE, (_request, response) => {
   response.json(SERVER_HEALTH_RESPONSE);
+});
+
+app.get(GEMINI_TEST_ROUTE, async (_request, response) => {
+  try {
+    const text = await generateGeminiText(GEMINI_TEST_PROMPT);
+
+    console.log(`${GEMINI_RESPONSE_LOG_PREFIX} ${text}`);
+    response.json({ text });
+  } catch (error: unknown) {
+    response.status(500).json({ error: resolveErrorMessage(error) });
+  }
 });
 
 export const startServer = async (): Promise<Server> => {
@@ -42,9 +67,7 @@ export const startServer = async (): Promise<Server> => {
 
 if (process.env.NODE_ENV !== SERVER_TEST_ENVIRONMENT) {
   startServer().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error);
-
-    console.error(message);
+    console.error(resolveErrorMessage(error));
     process.exitCode = 1;
   });
 }
