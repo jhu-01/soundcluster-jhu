@@ -280,7 +280,7 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 
   </details>
 
-- [ ] #21 [Refactor] 분석 라우트 controller/service 계층 분리
+- [x] #21 [Refactor] 분석 라우트 controller/service 계층 분리
   <details>
   <summary>🔍 작업 내용 보기</summary>
 
@@ -288,15 +288,15 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 `server/src/routes/analyze.ts`가 SSE 출력, request 파싱, cache 조회, Gemini 호출까지 함께 담당하고 있으므로, Architecture 기준에 맞게 controller/service 계층으로 분리합니다.
 
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] `server/src/controllers/analyzeController.ts`로 SSE 요청 처리 이동
-- [ ] `server/src/services/analyzeService.ts`로 cache miss/hit와 Gemini 분석 흐름 이동
-- [ ] route 파일은 URL 바인딩만 담당하도록 축소
-- [ ] 기존 `/api/analyze/stream` 응답 계약 유지
+- [x] `server/src/controllers/analyzeController.ts`로 SSE 요청 처리 이동
+- [x] `server/src/services/analyzeService.ts`로 cache miss/hit와 Gemini 분석 흐름 이동
+- [x] route 파일은 URL 바인딩만 담당하도록 축소
+- [x] 기존 `/api/analyze/stream` 응답 계약 유지
 
 ## ✅ 검증 방법
-- [ ] `corepack pnpm run server:build`
-- [ ] `corepack pnpm run lint`
-- [ ] `curl.exe -N http://127.0.0.1:3001/api/analyze/stream`
+- [x] `corepack pnpm run server:build`
+- [x] `corepack pnpm run lint`
+- [x] `curl.exe -N http://127.0.0.1:3001/api/analyze/stream`
 
   </details>
 
