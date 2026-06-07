@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { ANALYZE_CACHE_HIT_MESSAGE } from "../../../shared/constants/analyzeStream";
 import type { AnalyzeStreamEvent } from "../../../shared/types/analyzeStream";
-import type { EmotionVector } from "../../../shared/types/musicAnalysis";
+import type {
+  EmotionVector,
+  MusicAnalysisResponse,
+} from "../../../shared/types/musicAnalysis";
 import { ANALYZE_STREAM_ENDPOINT, API_BASE_URL } from "../constants/api";
 import type { SearchPayload, SearchStatus } from "../types/search";
 
@@ -9,6 +13,9 @@ interface SearchStreamState {
   status: SearchStatus;
   progress: number;
   message: string;
+  events: AnalyzeStreamEvent[];
+  result: MusicAnalysisResponse | null;
+  isCacheHit: boolean;
 }
 
 interface SearchStreamController {
@@ -46,6 +53,9 @@ export const useSearchStream = (
     status: "idle",
     progress: 0,
     message: DEFAULT_SEARCH_MESSAGE,
+    events: [],
+    result: null,
+    isCacheHit: false,
   });
 
   const closeStream = useCallback((): void => {
@@ -58,6 +68,9 @@ export const useSearchStream = (
       ...previousState,
       status: "error",
       message: STREAM_ERROR_MESSAGE,
+      events: previousState.events,
+      result: previousState.result,
+      isCacheHit: previousState.isCacheHit,
     }));
     closeStream();
   }, [closeStream]);
@@ -69,6 +82,9 @@ export const useSearchStream = (
         status: "connecting",
         progress: 0,
         message: "Connecting",
+        events: [],
+        result: null,
+        isCacheHit: false,
       });
 
       const stream = new EventSource(createAnalyzeStreamUrl(payload));
@@ -88,11 +104,16 @@ export const useSearchStream = (
           return;
         }
 
-        setState({
+        setState((previousState) => ({
           status: streamEvent.status === "done" ? "done" : "streaming",
           progress: streamEvent.progress,
           message: streamEvent.message,
-        });
+          events: [...previousState.events, streamEvent],
+          result: streamEvent.result ?? previousState.result,
+          isCacheHit:
+            streamEvent.message === ANALYZE_CACHE_HIT_MESSAGE ||
+            previousState.isCacheHit,
+        }));
 
         if (streamEvent.result) {
           onResult(streamEvent.result.emotions);

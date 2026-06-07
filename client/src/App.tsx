@@ -4,6 +4,7 @@ import type { EmotionVector } from "../../shared/types/musicAnalysis";
 import { StarsCanvas } from "./canvas/StarsCanvas";
 import { ControlPanel } from "./components/ControlPanel";
 import { SearchBar } from "./components/SearchBar";
+import { StreamingLogViewer } from "./components/StreamingLogViewer";
 import {
   DEFAULT_AXIS_SELECTION,
   DEFAULT_EMOTION_VECTOR,
@@ -65,6 +66,14 @@ export default function App() {
           onToggleAxis={toggleAxis}
           values={analysisEmotions}
         />
+        <div className={styles.stream}>
+          <StreamingLogViewer
+            events={searchStream.state.events}
+            isCacheHit={searchStream.state.isCacheHit}
+            result={searchStream.state.result}
+            status={searchStream.state.status}
+          />
+        </div>
       </div>
     </main>
   );
