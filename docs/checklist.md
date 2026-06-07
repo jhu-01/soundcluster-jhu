@@ -12,7 +12,7 @@
 - [x] `.gitignore` 파일 생성하여 `node_modules` 및 환경변수 보안 격리 설정
 
   </details>
-- [ ] #3 [Feat] Express 기본 서버 구동 및 헬스체크 엔드포인트 구현
+- [x] #3 [Feat] Express 기본 서버 구동 및 헬스체크 엔드포인트 구현
   <details>
   <summary>🔍 이슈 내용 보기</summary>
 
@@ -20,10 +20,10 @@
 Express와 TypeScript를 개발 의존성으로 설치하고, 서버를 켰을 때 브라우저에서 접속이 잘 되는지 확인하는 최소한의 뼈대를 만듭니다.
 
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] `express`, `typescript`, `@types/node`, `@types/express` 패키지 설치
-- [ ] `tsconfig.json` 초기화 및 빌드/실행 환경 설정
-- [ ] `server/src/app.ts` 파일 생성 및 포트 기본 바인딩
-- [ ] `GET /api/health` 엔드포인트 테스트 (브라우저 접속 시 `{"status": "ok"}` 반환 확인)
+- [x] `express`, `typescript`, `@types/node`, `@types/express` 패키지 설치
+- [x] `tsconfig.json` 초기화 및 빌드/실행 환경 설정
+- [x] `server/src/app.ts` 파일 생성 및 포트 기본 바인딩
+- [x] `GET /api/health` 엔드포인트 테스트 (브라우저 접속 시 `{"status": "ok"}` 반환 확인)
 
   </details>
 - [ ] #4 [Env] MySQL 로컬 설치 및 커넥션 풀(Connection Pool) 연결
