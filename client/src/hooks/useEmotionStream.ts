@@ -23,10 +23,12 @@ export type EmotionStreamConnectionStatus =
 
 export interface EmotionStreamState {
   status: EmotionStreamConnectionStatus;
+  request: EmotionStreamRequest | null;
   events: AnalyzeStreamEvent[];
   latestEvent: AnalyzeStreamEvent | null;
   result: MusicAnalysisResponse | null;
   errorMessage: string | null;
+  isActive: boolean;
 }
 
 export interface EmotionStreamController {
@@ -37,10 +39,12 @@ export interface EmotionStreamController {
 
 const INITIAL_STREAM_STATE: EmotionStreamState = {
   status: "idle",
+  request: null,
   events: [],
   latestEvent: null,
   result: null,
   errorMessage: null,
+  isActive: false,
 };
 
 const STREAM_CONNECTION_ERROR_MESSAGE = "Analysis stream connection failed.";
@@ -140,10 +144,12 @@ export const useEmotionStream = (): EmotionStreamController => {
     (streamEvent: AnalyzeStreamEvent): void => {
       setState((previousState) => ({
         status: streamEvent.status === "done" ? "done" : "streaming",
+        request: previousState.request,
         events: [...previousState.events, streamEvent],
         latestEvent: streamEvent,
         result: streamEvent.result ?? previousState.result,
         errorMessage: null,
+        isActive: streamEvent.status !== "done",
       }));
 
       if (streamEvent.status === "done") {
@@ -160,6 +166,7 @@ export const useEmotionStream = (): EmotionStreamController => {
         ...previousState,
         status: "error",
         errorMessage: resolveErrorMessage(error),
+        isActive: false,
       }));
     },
     [closeStream],
@@ -171,6 +178,8 @@ export const useEmotionStream = (): EmotionStreamController => {
       setState({
         ...INITIAL_STREAM_STATE,
         status: "connecting",
+        request,
+        isActive: true,
       });
 
       let stream: EventSource;
