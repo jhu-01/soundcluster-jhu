@@ -1,0 +1,4 @@
+interface:
+  display_name: "Checklist Generator"
+  short_description: "Generate next-step project checklists."
+  default_prompt: "Create the next implementation checklist from architecture, PRD, and current code state."

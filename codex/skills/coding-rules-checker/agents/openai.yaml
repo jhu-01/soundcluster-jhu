@@ -1,0 +1,4 @@
+interface:
+  display_name: "Coding Rules Checker"
+  short_description: "Review changed code against project rules."
+  default_prompt: "Check the changed code for SoundCluster coding rule violations."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Issue Publisher"
+  short_description: "Publish checklist items as GitHub issues."
+  default_prompt: "Create GitHub issues from the selected checklist items."

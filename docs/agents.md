@@ -99,6 +99,8 @@ docs: #6 에이전트 지침 문서 표준화
 
 ## 7. 맞춤형 작업 스킬
 
+프로젝트 전용 Codex skill은 `codex/skills/` 아래에 둡니다. 사용자가 skill 이름을 직접 말하지 않아도 아래 역할과 유사한 요청이면 해당 skill의 `SKILL.md`를 먼저 확인하고 적용합니다.
+
 ### Commit-Generator
 
 작업 내용을 바탕으로 커밋 메시지를 작성할 때 다음 규칙을 따릅니다.
@@ -108,9 +110,46 @@ docs: #6 에이전트 지침 문서 표준화
 3. `- 확인내용:`에는 실제 변경 사항과 검증 내용을 적습니다.
 4. `- 이해 안 됐던 부분:`에는 작업 중 판단이 필요했던 지점과 해결 과정을 개발자의 시선으로 기록합니다.
 
+### Checklist-Generator
+
+위치: `codex/skills/checklist-generator`
+
+아키텍처, PRD, 현재 구현 상태를 바탕으로 다음 단계 체크리스트를 만들 때 사용합니다.
+
+1. `docs/Architecture.md`, PRD, `docs/checklist.md`, 현재 구현 상태를 함께 읽습니다.
+2. 완료된 흐름과 남은 흐름을 연결해 "무엇부터 할지"를 정리합니다.
+3. 기존 GitHub issue 번호가 있으면 그대로 매핑하고, 없으면 새 번호를 임의로 만들지 않습니다.
+4. 각 항목에 목표, 관련 파일, 검증 방법, 의존 관계를 포함합니다.
+5. 생성된 항목을 GitHub issue로 등록해야 하면 `Github-Issue-Publisher`로 넘깁니다.
+
+### Github-Issue-Publisher
+
+위치: `codex/skills/github-issue-publisher`
+
+체크리스트 항목을 GitHub issue로 등록하거나, issue 번호와 `docs/checklist.md`를 동기화할 때 사용합니다.
+
+1. 체크리스트 항목과 기존 GitHub issue를 비교해 중복 생성을 피합니다.
+2. issue 제목, 목표, 범위, 세부 작업, 검증 방법을 작성합니다.
+3. GitHub에 직접 쓰는 작업은 skill만으로 처리하지 않고 GitHub MCP 또는 `gh` CLI 같은 외부 도구를 사용합니다.
+4. issue 생성이 성공한 뒤에만 `docs/checklist.md`에 번호를 반영합니다.
+5. issue 생성 실패 시 생성한 척하지 말고 실패 원인과 초안을 보고합니다.
+
+### Coding-Rules-Checker
+
+위치: `codex/skills/coding-rules-checker`
+
+변경된 코드가 프로젝트 규칙, 디렉토리 구조, validation 패턴, 에러 핸들링, 가독성 기준을 지키는지 검사할 때 사용합니다.
+
+1. `git diff` 또는 staged diff를 먼저 보고 관련 파일의 주변 코드만 추가로 엽니다.
+2. `docs/agents.md`와 `docs/Architecture.md` 기준으로 위반 사항을 분류합니다.
+3. 설명용 주석 남발, 절차지향과 객체지향의 근거 없는 혼용, 과도한 한 줄 압축, 중첩 조건문 안의 복잡한 함수 호출을 지적합니다.
+4. 비슷한 기능이나 모양의 코드가 흩어져 있으면 같은 방향으로 모으도록 제안합니다.
+5. 중복되거나 하나로 엮어야 하는 데이터 값은 상수, shared type, helper, hook, 또는 컴포넌트로 관리하도록 제안합니다.
+6. 결과는 심각도와 파일/라인 기준의 위반 목록으로 보고합니다.
+
 ### Checklist-Driven-Build
 
-기능 구현을 요청받으면 `docs/checklist.md`의 태스크를 기준으로 범위를 제한합니다.
+기능 구현을 요청받으면 `docs/checklist.md`의 태스크를 기준으로 범위를 제한합니다. 새 체크리스트를 만드는 작업은 `Checklist-Generator`를 우선 사용하고, 이 섹션은 실제 구현 중 범위 통제 규칙으로 적용합니다.
 
 1. 작업 전 관련 checklist 항목을 식별합니다.
 2. 구현 파일의 위치가 `docs/Architecture.md`와 맞는지 확인합니다.
