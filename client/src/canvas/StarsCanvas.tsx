@@ -1,5 +1,6 @@
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import { useMemo } from "react";
 
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 import { GridBase } from "./GridBase";
@@ -81,12 +82,51 @@ const mockTracks: MockTrack[] = [
   },
 ];
 
+const CONTROL_INFLUENCE = 0.62;
+
+const clampUnitValue = (value: number): number => {
+  if (value < 0) {
+    return 0;
+  }
+
+  if (value > 1) {
+    return 1;
+  }
+
+  return value;
+};
+
+const blendEmotionValue = (baseValue: number, controlValue: number): number => {
+  const offset = (controlValue - 0.5) * CONTROL_INFLUENCE;
+
+  return clampUnitValue(baseValue + offset);
+};
+
+const blendEmotions = (
+  baseEmotions: EmotionVector,
+  vectorControls: EmotionVector,
+): EmotionVector => {
+  return {
+    energy: blendEmotionValue(baseEmotions.energy, vectorControls.energy),
+    valence: blendEmotionValue(baseEmotions.valence, vectorControls.valence),
+    tempoDensity: blendEmotionValue(
+      baseEmotions.tempoDensity,
+      vectorControls.tempoDensity,
+    ),
+    spaceDepth: blendEmotionValue(baseEmotions.spaceDepth, vectorControls.spaceDepth),
+    tension: blendEmotionValue(baseEmotions.tension, vectorControls.tension),
+  };
+};
+
 const mapUnitToScene = (value: number): number => {
   return (value - 0.5) * 7.6;
 };
 
-const createTrackPoint = (track: MockTrack): TrackPoint => {
-  const { emotions } = track;
+const createTrackPoint = (
+  track: MockTrack,
+  vectorControls: EmotionVector,
+): TrackPoint => {
+  const emotions = blendEmotions(track.emotions, vectorControls);
   const hue = Math.round(180 + emotions.valence * 120 - emotions.tension * 42);
   const lightness = Math.round(48 + emotions.energy * 18);
 
@@ -102,9 +142,11 @@ const createTrackPoint = (track: MockTrack): TrackPoint => {
   };
 };
 
-const trackPoints = mockTracks.map(createTrackPoint);
+function TrackNodes({ vectorControls }: { vectorControls: EmotionVector }) {
+  const trackPoints = useMemo(() => {
+    return mockTracks.map((track) => createTrackPoint(track, vectorControls));
+  }, [vectorControls]);
 
-function TrackNodes() {
   return (
     <group>
       {trackPoints.map((point) => (
@@ -122,7 +164,11 @@ function TrackNodes() {
   );
 }
 
-export function StarsCanvas() {
+export function StarsCanvas({
+  vectorControls,
+}: {
+  vectorControls: EmotionVector;
+}) {
   return (
     <Canvas
       camera={{ position: [6.4, 4.8, 7.6], fov: 48 }}
@@ -135,7 +181,7 @@ export function StarsCanvas() {
       <pointLight position={[-5, 2, -3]} intensity={1.25} color="#22d3ee" />
       <Stars radius={64} depth={34} count={1400} factor={4} fade speed={0.35} />
       <GridBase />
-      <TrackNodes />
+      <TrackNodes vectorControls={vectorControls} />
       <OrbitControls
         enableDamping
         dampingFactor={0.06}
