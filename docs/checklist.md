@@ -92,15 +92,15 @@ Vite를 이용해 엄격한 타입스크립트 기반의 React SPA 환경을 빌
 - [x] 공간 감각을 주기 위한 바닥면 네온 그리드(`GridBase.tsx`) 가이드라인 레이아웃 배치
 
   </details>
-- [ ] #9 [Feat] 백엔드 SSE(Server-Sent Events) 스트리밍 API 구현
+- [x] #9 [Feat] 백엔드 SSE(Server-Sent Events) 스트리밍 API 구현
   <details>
   <summary>🔍 이슈 내용 보기</summary>
   ## 🎯 작업 개요
 Gemini의 AI 분석 작업이 진행되는 동안 클라이언트가 블로킹(대기)되지 않도록, 서버에서 클라이언트로 실시간 상태를 밀어주는 SSE(Server-Sent Events) 단방향 스트리밍 채널을 구축합니다.
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] `server/src/routes/analyze.ts` 라우터에 SSE 전용 헤더(`text/event-stream`) 설정
-- [ ] 분석 단계별 상태 메세지 구조 설계 (`status: "fetching" | "analyzing" | "done"`)
-- [ ] 더미 데이터를 활용해 브라우저 `EventSource`로 실시간 데이터가 뚝뚝 떨어지는지 스트리밍 검증
+- [x] `server/src/routes/analyze.ts` 라우터에 SSE 전용 헤더(`text/event-stream`) 설정
+- [x] 분석 단계별 상태 메세지 구조 설계 (`status: "fetching" | "analyzing" | "done"`)
+- [x] 더미 데이터를 활용해 브라우저 `EventSource`로 실시간 데이터가 뚝뚝 떨어지는지 스트리밍 검증
 
   </details>
 - [ ] #10 [Feat] 데이터베이스 캐싱 계층(Caching Layer) 및 조회 로직 구현
