@@ -12,6 +12,13 @@ export interface MdsMappingOptions {
   verticalScale?: number;
 }
 
+export interface EmotionScenePoint {
+  position: Vector3;
+  color: string;
+  scale: number;
+  intensity: number;
+}
+
 type NumericVector = [number, number, number, number, number];
 
 const EMOTION_AXES: readonly EmotionAxis[] = [
@@ -32,6 +39,17 @@ const DEFAULT_AXIS_WEIGHTS: Record<EmotionAxis, number> = {
 
 const DEFAULT_SCENE_SCALE = 4.2;
 const DEFAULT_VERTICAL_SCALE = 0.72;
+const COLOR_HUE_BASE = 180;
+const COLOR_HUE_VALENCE_RANGE = 120;
+const COLOR_HUE_TENSION_OFFSET = 42;
+const COLOR_SATURATION = 86;
+const COLOR_LIGHTNESS_BASE = 48;
+const COLOR_LIGHTNESS_ENERGY_RANGE = 18;
+const NODE_SCALE_BASE = 0.16;
+const NODE_SCALE_TEMPO_RANGE = 0.24;
+const NODE_INTENSITY_BASE = 1.12;
+const NODE_INTENSITY_ENERGY_RANGE = 0.82;
+const NODE_INTENSITY_TENSION_RANGE = 0.42;
 const POWER_ITERATION_COUNT = 48;
 const EIGENVALUE_EPSILON = 1e-7;
 
@@ -260,4 +278,48 @@ export const mapEmotionVectorToScenePoint = (
   options: MdsMappingOptions = {},
 ): Vector3 => {
   return mapEmotionVectorsToScenePoints([vector], options)[0];
+};
+
+const mapEmotionVectorToColor = (vector: EmotionVector): string => {
+  const energy = clampUnitValue(vector.energy);
+  const valence = clampUnitValue(vector.valence);
+  const tension = clampUnitValue(vector.tension);
+  const hue = Math.round(
+    COLOR_HUE_BASE +
+      valence * COLOR_HUE_VALENCE_RANGE -
+      tension * COLOR_HUE_TENSION_OFFSET,
+  );
+  const lightness = Math.round(
+    COLOR_LIGHTNESS_BASE + energy * COLOR_LIGHTNESS_ENERGY_RANGE,
+  );
+
+  return `hsl(${hue} ${COLOR_SATURATION}% ${lightness}%)`;
+};
+
+const mapEmotionVectorToScale = (vector: EmotionVector): number => {
+  return NODE_SCALE_BASE + clampUnitValue(vector.tempoDensity) * NODE_SCALE_TEMPO_RANGE;
+};
+
+const mapEmotionVectorToIntensity = (vector: EmotionVector): number => {
+  return (
+    NODE_INTENSITY_BASE +
+    clampUnitValue(vector.energy) * NODE_INTENSITY_ENERGY_RANGE +
+    clampUnitValue(vector.tension) * NODE_INTENSITY_TENSION_RANGE
+  );
+};
+
+export const mapEmotionVectorsToScenePointData = (
+  vectors: EmotionVector[],
+  options: MdsMappingOptions = {},
+): EmotionScenePoint[] => {
+  const positions = mapEmotionVectorsToScenePoints(vectors, options);
+
+  return vectors.map((vector, index) => {
+    return {
+      position: positions[index],
+      color: mapEmotionVectorToColor(vector),
+      scale: mapEmotionVectorToScale(vector),
+      intensity: mapEmotionVectorToIntensity(vector),
+    };
+  });
 };

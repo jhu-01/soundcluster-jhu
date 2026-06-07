@@ -11,6 +11,7 @@ export interface StarNodeData {
   position: Vector3;
   color: string;
   scale: number;
+  intensity: number;
 }
 
 interface StarNodeProps {
@@ -62,7 +63,7 @@ export function StarNode({ index, node }: StarNodeProps) {
     mesh.scale.setScalar(nextScale);
     material.color.lerp(isHovered ? hoverColor : baseColor, hoverEasing);
     material.emissive.lerp(isHovered ? hoverColor : baseColor, hoverEasing);
-    material.emissiveIntensity = isHovered ? 2.45 : 1.35;
+    material.emissiveIntensity = isHovered ? node.intensity * 1.72 : node.intensity;
   });
 
   return (
@@ -78,7 +79,7 @@ export function StarNode({ index, node }: StarNodeProps) {
           ref={materialRef}
           color={node.color}
           emissive={node.color}
-          emissiveIntensity={1.35}
+          emissiveIntensity={node.intensity}
           roughness={0.28}
         />
       </mesh>

@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { Vector3 } from "three";
 
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
-import { mapEmotionVectorsToScenePoints } from "../utils/mds";
+import { mapEmotionVectorsToScenePointData } from "../utils/mds";
 import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
 import { StarNode } from "./StarNode";
@@ -79,22 +79,18 @@ const mockTracks: MockTrack[] = [
   },
 ];
 
-const mockTrackPositions = mapEmotionVectorsToScenePoints(
+const mockTrackPoints = mapEmotionVectorsToScenePointData(
   mockTracks.map((track) => track.emotions),
 );
 
 const createTrackPoint = (track: MockTrack, index: number): StarNodeData => {
-  const { emotions } = track;
-  const hue = Math.round(180 + emotions.valence * 120 - emotions.tension * 42);
-  const lightness = Math.round(48 + emotions.energy * 18);
+  const point = mockTrackPoints[index];
 
   return {
     id: track.id,
     title: track.title,
     artist: track.artist,
-    position: mockTrackPositions[index],
-    color: `hsl(${hue} 86% ${lightness}%)`,
-    scale: 0.16 + emotions.tempoDensity * 0.24,
+    ...point,
   };
 };
 
