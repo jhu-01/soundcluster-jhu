@@ -1,5 +1,7 @@
 import express from "express";
+import type { Server } from "node:http";
 
+import { checkDatabaseConnection } from "./config/db.js";
 import {
   SERVER_DEFAULT_PORT,
   SERVER_HEALTH_RESPONSE,
@@ -28,7 +30,9 @@ app.get(SERVER_HEALTH_ROUTE, (_request, response) => {
   response.json(SERVER_HEALTH_RESPONSE);
 });
 
-export const startServer = () => {
+export const startServer = async (): Promise<Server> => {
+  await checkDatabaseConnection();
+
   const port = resolveServerPort(process.env.PORT);
 
   return app.listen(port, () => {
@@ -37,5 +41,10 @@ export const startServer = () => {
 };
 
 if (process.env.NODE_ENV !== SERVER_TEST_ENVIRONMENT) {
-  startServer();
+  startServer().catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+
+    console.error(message);
+    process.exitCode = 1;
+  });
 }
