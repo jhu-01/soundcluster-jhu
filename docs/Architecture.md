@@ -64,7 +64,7 @@ soundcluster/
 
 외부 API 연동, 분석 파이프라인, 캐싱, SSE 스트리밍을 담당합니다.
 
-- Spotify와 Gemini API Key를 서버에서만 관리합니다.
+- 외부 음악 메타데이터 API와 Gemini API Key를 서버에서만 관리합니다.
 - Gemini 응답을 JSON으로 검증합니다.
 - MySQL 캐시를 조회하고 저장합니다.
 - 분석 진행 상태와 결과를 SSE로 클라이언트에 전달합니다.

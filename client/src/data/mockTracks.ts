@@ -1,9 +1,12 @@
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 
 export interface MockTrack {
+  albumImageUrl?: string | null;
   id: string;
   title: string;
   artist: string;
+  itunesTrackId?: string;
+  itunesUrl?: string;
   emotions: EmotionVector;
 }
 
@@ -12,6 +15,7 @@ const baseMockTracks: MockTrack[] = [
     id: "midnight-circuit",
     title: "Midnight Circuit",
     artist: "SoundCluster Lab",
+    albumImageUrl: null,
     emotions: {
       energy: 0.72,
       valence: 0.42,
@@ -24,6 +28,7 @@ const baseMockTracks: MockTrack[] = [
     id: "soft-orbit",
     title: "Soft Orbit",
     artist: "Mira Field",
+    albumImageUrl: null,
     emotions: {
       energy: 0.28,
       valence: 0.82,
@@ -36,6 +41,7 @@ const baseMockTracks: MockTrack[] = [
     id: "fault-line",
     title: "Fault Line",
     artist: "Noir Static",
+    albumImageUrl: null,
     emotions: {
       energy: 0.91,
       valence: 0.22,
@@ -48,6 +54,7 @@ const baseMockTracks: MockTrack[] = [
     id: "glass-harbor",
     title: "Glass Harbor",
     artist: "Aster Tide",
+    albumImageUrl: null,
     emotions: {
       energy: 0.46,
       valence: 0.64,
@@ -60,6 +67,7 @@ const baseMockTracks: MockTrack[] = [
     id: "solar-drift",
     title: "Solar Drift",
     artist: "Dayline",
+    albumImageUrl: null,
     emotions: {
       energy: 0.66,
       valence: 0.78,

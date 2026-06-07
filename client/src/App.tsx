@@ -1,5 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 
+import type { ItunesTrackMetadata } from "../../shared/types/itunes";
+import { ItunesSearchPanel } from "./components/ItunesSearchPanel";
 import { ShareModal } from "./components/ShareModal";
 import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
 import { mockTracks } from "./data/mockTracks";
@@ -56,6 +58,26 @@ const createMutatedSnapshot = (
   };
 };
 
+const createTrackFromItunesMetadata = (
+  track: ItunesTrackMetadata,
+): ClusterShareSnapshot["tracks"][number] => {
+  return {
+    id: track.itunesTrackId,
+    itunesTrackId: track.itunesTrackId,
+    itunesUrl: track.itunesUrl,
+    albumImageUrl: track.albumImageUrl,
+    title: track.title,
+    artist: track.artist,
+    emotions: {
+      energy: 0.5,
+      valence: 0.5,
+      tempoDensity: 0.5,
+      spaceDepth: 0.5,
+      tension: 0.5,
+    },
+  };
+};
+
 export default function App() {
   const initialSnapshot = useMemo(() => {
     return readShareSnapshotFromLocation(window.location.search);
@@ -74,6 +96,23 @@ export default function App() {
     );
     setSnapshot(nextSnapshot);
   }, [snapshot]);
+  const bindItunesTrack = useCallback((track: ItunesTrackMetadata) => {
+    setSnapshot((currentSnapshot) => {
+      const nextTrack = createTrackFromItunesMetadata(track);
+      const nextTracks = [
+        nextTrack,
+        ...currentSnapshot.tracks.filter(
+          (snapshotTrack) => snapshotTrack.id !== nextTrack.id,
+        ),
+      ];
+
+      return {
+        ...currentSnapshot,
+        selectedTrackId: nextTrack.id,
+        tracks: nextTracks,
+      };
+    });
+  }, []);
 
   return (
     <main className={styles.shell}>
@@ -90,10 +129,13 @@ export default function App() {
         Share
       </button>
       {import.meta.env.DEV ? (
-        <SnapshotDebugPanel
-          onMutateSnapshot={mutateSnapshot}
-          snapshot={snapshot}
-        />
+        <>
+          <ItunesSearchPanel onSelectTrack={bindItunesTrack} />
+          <SnapshotDebugPanel
+            onMutateSnapshot={mutateSnapshot}
+            snapshot={snapshot}
+          />
+        </>
       ) : null}
       <ShareModal
         isOpen={isShareOpen}
