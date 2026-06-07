@@ -2,6 +2,7 @@ import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, type ElementRef } from "react";
 
+import { mapEmotionVectorToScenePoint } from "../../../shared/utils/emotionToPoint.js";
 import { GridBase } from "./GridBase";
 import type {
   ClusterShareSnapshot,
@@ -16,24 +17,14 @@ interface TrackPoint {
   scale: number;
 }
 
-const mapUnitToScene = (value: number): number => {
-  return (value - 0.5) * 7.6;
-};
-
 const createTrackPoint = (track: ClusterShareTrack): TrackPoint => {
-  const { emotions } = track;
-  const hue = Math.round(180 + emotions.valence * 120 - emotions.tension * 42);
-  const lightness = Math.round(48 + emotions.energy * 18);
+  const scenePoint = mapEmotionVectorToScenePoint(track.emotions);
 
   return {
     id: track.id,
-    position: [
-      mapUnitToScene(emotions.energy),
-      mapUnitToScene(emotions.spaceDepth) * 0.72,
-      mapUnitToScene(emotions.valence),
-    ],
-    color: `hsl(${hue} 86% ${lightness}%)`,
-    scale: 0.16 + emotions.tempoDensity * 0.24,
+    position: scenePoint.position,
+    color: scenePoint.color,
+    scale: scenePoint.scale,
   };
 };
 

@@ -337,7 +337,7 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 
   </details>
 
-- [ ] #24 [Test] 분석 파이프라인 최소 자동 테스트 추가
+- [x] #24 [Test] 분석 파이프라인 최소 자동 테스트 추가
   <details>
   <summary>🔍 작업 내용 보기</summary>
 
@@ -345,15 +345,15 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 현재 검증은 수동 명령 위주이므로, 캐시 키 생성, Gemini JSON validation, SSE 이벤트 순서, 5D 좌표 매핑 같은 핵심 계약을 자동 테스트로 고정합니다.
 
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] 테스트 러너 선택 및 최소 설정
-- [ ] `createAnalysisCacheKey()`가 title/artist 대소문자와 공백을 정규화하는지 테스트
-- [ ] `parseMusicAnalysisResponse()`가 0.0 ~ 1.0 범위 밖 값을 거부하는지 테스트
-- [ ] SSE 이벤트 fixture가 `fetching -> analyzing -> done` 순서를 유지하는지 테스트
-- [ ] 5D 벡터가 안정적인 3D 좌표로 매핑되는지 테스트
+- [x] 테스트 러너 선택 및 최소 설정
+- [x] `createAnalysisCacheKey()`가 title/artist 대소문자와 공백을 정규화하는지 테스트
+- [x] `parseMusicAnalysisResponse()`가 0.0 ~ 1.0 범위 밖 값을 거부하는지 테스트
+- [x] SSE 이벤트 fixture가 `fetching -> analyzing -> done` 순서를 유지하는지 테스트
+- [x] 5D 벡터가 안정적인 3D 좌표로 매핑되는지 테스트
 
 ## ✅ 검증 방법
-- [ ] `corepack pnpm run test`
-- [ ] `corepack pnpm run lint`
+- [x] `corepack pnpm run test`
+- [x] `corepack pnpm run lint`
 
   </details>
 
