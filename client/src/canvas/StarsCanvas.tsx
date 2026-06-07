@@ -1,7 +1,9 @@
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
+import type { Vector3 } from "three";
 
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
+import { mapEmotionVectorsToScenePoints } from "../utils/mds";
 import { GridBase } from "./GridBase";
 
 interface MockTrack {
@@ -13,7 +15,7 @@ interface MockTrack {
 
 interface TrackPoint {
   id: string;
-  position: [number, number, number];
+  position: Vector3;
   color: string;
   scale: number;
 }
@@ -81,22 +83,18 @@ const mockTracks: MockTrack[] = [
   },
 ];
 
-const mapUnitToScene = (value: number): number => {
-  return (value - 0.5) * 7.6;
-};
+const mockTrackPositions = mapEmotionVectorsToScenePoints(
+  mockTracks.map((track) => track.emotions),
+);
 
-const createTrackPoint = (track: MockTrack): TrackPoint => {
+const createTrackPoint = (track: MockTrack, index: number): TrackPoint => {
   const { emotions } = track;
   const hue = Math.round(180 + emotions.valence * 120 - emotions.tension * 42);
   const lightness = Math.round(48 + emotions.energy * 18);
 
   return {
     id: track.id,
-    position: [
-      mapUnitToScene(emotions.energy),
-      mapUnitToScene(emotions.spaceDepth) * 0.72,
-      mapUnitToScene(emotions.valence),
-    ],
+    position: mockTrackPositions[index],
     color: `hsl(${hue} 86% ${lightness}%)`,
     scale: 0.16 + emotions.tempoDensity * 0.24,
   };
