@@ -2,8 +2,11 @@ import express from "express";
 import type { Server } from "node:http";
 
 import { checkDatabaseConnection } from "./config/db.js";
-import { generateGeminiText } from "./config/gemini.js";
+import { generateGeminiText, generateMusicAnalysis } from "./config/gemini.js";
 import {
+  GEMINI_ANALYSIS_LOG_PREFIX,
+  GEMINI_ANALYSIS_TEST_ROUTE,
+  GEMINI_DUMMY_ANALYSIS_REQUEST,
   GEMINI_RESPONSE_LOG_PREFIX,
   GEMINI_TEST_PROMPT,
   GEMINI_TEST_ROUTE,
@@ -50,6 +53,17 @@ app.get(GEMINI_TEST_ROUTE, async (_request, response) => {
 
     console.log(`${GEMINI_RESPONSE_LOG_PREFIX} ${text}`);
     response.json({ text });
+  } catch (error: unknown) {
+    response.status(500).json({ error: resolveErrorMessage(error) });
+  }
+});
+
+app.get(GEMINI_ANALYSIS_TEST_ROUTE, async (_request, response) => {
+  try {
+    const analysis = await generateMusicAnalysis(GEMINI_DUMMY_ANALYSIS_REQUEST);
+
+    console.log(`${GEMINI_ANALYSIS_LOG_PREFIX} ${JSON.stringify(analysis)}`);
+    response.json(analysis);
   } catch (error: unknown) {
     response.status(500).json({ error: resolveErrorMessage(error) });
   }
