@@ -36,14 +36,14 @@ soundcluster/
 │   └── utils/                           # 순수 유틸리티
 │
 ├── docs/                                # 프로젝트 문서
-│   ├── AGENTS.md                        # AI 에이전트 작업 지침
+│   ├── agents.md                        # AI 에이전트 작업 지침
 │   ├── Architecture.md                  # 아키텍처 기준 문서
 │   ├── checklist.md                     # 구현 체크리스트
 │   └── prompt-guideline.md              # Gemini 분석 프롬프트 명세
 │
 ├── .gitignore
 ├── package.json
-├── pnpm-lock.yaml
+├── package-lock.json
 └── README.md
 ```
 
@@ -81,7 +81,7 @@ soundcluster/
 
 프로젝트 의사결정과 에이전트 작업 기준을 보관합니다.
 
-- `AGENTS.md`: Codex와 Gemini 등 AI 에이전트가 따를 작업 지침
+- `agents.md`: Codex와 Gemini 등 AI 에이전트가 따를 작업 지침
 - `Architecture.md`: 디렉토리와 레이어 책임
 - `checklist.md`: 구현 순서와 이슈 단위 작업
 - `prompt-guideline.md`: Gemini 분석 프롬프트와 JSON 출력 계약

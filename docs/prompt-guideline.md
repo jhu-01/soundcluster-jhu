@@ -1,6 +1,6 @@
 # Prompt Guideline
 
-이 문서는 SoundCluster 백엔드가 Gemini API를 호출할 때 사용할 분석 프롬프트, 입력 payload, 출력 JSON 계약을 정의합니다. 코딩 에이전트 작업 지침은 `docs/AGENTS.md`를 기준으로 하고, 이 문서는 런타임 AI 분석 파이프라인에만 집중합니다.
+이 문서는 SoundCluster 백엔드가 Gemini API를 호출할 때 사용할 분석 프롬프트, 입력 payload, 출력 JSON 계약을 정의합니다. 코딩 에이전트 작업 지침은 `docs/agents.md`를 기준으로 하고, 이 문서는 런타임 AI 분석 파이프라인에만 집중합니다.
 
 ---
 
