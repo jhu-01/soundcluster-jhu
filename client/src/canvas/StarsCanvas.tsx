@@ -1,7 +1,12 @@
 import { OrbitControls, Stars } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
+import { Color, Vector3 } from "three";
+import type { Group, MeshStandardMaterial } from "three";
 
+import type { AnalyzeStreamVisualFrame } from "../../../shared/types/analyzeStream";
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
+import { useAnalysis } from "../context/AnalysisContext";
 import { GridBase } from "./GridBase";
 
 interface MockTrack {
@@ -16,6 +21,13 @@ interface TrackPoint {
   position: [number, number, number];
   color: string;
   scale: number;
+}
+
+interface AnimatedTrackNodeProps {
+  index: number;
+  point: TrackPoint;
+  visual: AnalyzeStreamVisualFrame;
+  isFinal: boolean;
 }
 
 const mockTracks: MockTrack[] = [
@@ -81,8 +93,29 @@ const mockTracks: MockTrack[] = [
   },
 ];
 
+const DEFAULT_VISUAL_FRAME: AnalyzeStreamVisualFrame = {
+  intensity: 1,
+  activeNodeCount: mockTracks.length,
+  orbitSpeed: 0.08,
+  color: "#5eead4",
+};
+
+const NODE_SETTLE_SPEED = 3.2;
+const STREAM_COLOR_BLEND_SPEED = 5.8;
+const ENTRY_RADIUS = 6.8;
+
 const mapUnitToScene = (value: number): number => {
   return (value - 0.5) * 7.6;
+};
+
+const createEntryPosition = (index: number): Vector3 => {
+  const angle = index * 2.3999632297;
+
+  return new Vector3(
+    Math.cos(angle) * ENTRY_RADIUS,
+    (index % 4 - 1.5) * 0.42,
+    Math.sin(angle) * ENTRY_RADIUS,
+  );
 };
 
 const createTrackPoint = (track: MockTrack): TrackPoint => {
@@ -102,21 +135,95 @@ const createTrackPoint = (track: MockTrack): TrackPoint => {
   };
 };
 
-const trackPoints = mockTracks.map(createTrackPoint);
+const createSceneTracks = (analysisEmotions: EmotionVector | null): MockTrack[] => {
+  return mockTracks.map((track, index) => {
+    if (index !== 0 || !analysisEmotions) {
+      return track;
+    }
+
+    return {
+      ...track,
+      emotions: analysisEmotions,
+    };
+  });
+};
+
+function AnimatedTrackNode({
+  index,
+  point,
+  visual,
+  isFinal,
+}: AnimatedTrackNodeProps) {
+  const groupRef = useRef<Group>(null);
+  const materialRef = useRef<MeshStandardMaterial>(null);
+  const targetColorRef = useRef(new Color(point.color));
+  const targetPosition = useMemo(() => {
+    return new Vector3(...point.position);
+  }, [point.position]);
+  const entryPosition = useMemo(() => createEntryPosition(index), [index]);
+
+  useFrame((_, delta) => {
+    const group = groupRef.current;
+    const material = materialRef.current;
+
+    if (!group || !material) {
+      return;
+    }
+
+    const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
+    const colorEasing = 1 - Math.exp(-STREAM_COLOR_BLEND_SPEED * delta);
+    const emissiveColor = isFinal ? point.color : visual.color;
+
+    group.position.lerp(targetPosition, settleEasing);
+    targetColorRef.current.set(emissiveColor);
+    material.emissive.lerp(targetColorRef.current, colorEasing);
+    material.emissiveIntensity = 0.82 + visual.intensity * 1.24;
+  });
+
+  return (
+    <group ref={groupRef} position={entryPosition}>
+      <mesh>
+        <sphereGeometry args={[point.scale, 32, 32]} />
+        <meshStandardMaterial
+          ref={materialRef}
+          color={point.color}
+          emissive={point.color}
+          emissiveIntensity={1.3}
+          roughness={0.34}
+        />
+      </mesh>
+    </group>
+  );
+}
 
 function TrackNodes() {
+  const { state } = useAnalysis();
+  const groupRef = useRef<Group>(null);
+  const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
+  const trackPoints = useMemo(() => {
+    return createSceneTracks(state.result?.emotions ?? null).map(createTrackPoint);
+  }, [state.result]);
+  const activeNodeCount = Math.min(visual.activeNodeCount, trackPoints.length);
+  const isFinal = state.status === "done";
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) {
+      return;
+    }
+
+    groupRef.current.rotation.y += delta * visual.orbitSpeed;
+  });
+
   return (
-    <group>
-      {trackPoints.map((point) => (
-        <mesh key={point.id} position={point.position}>
-          <sphereGeometry args={[point.scale, 32, 32]} />
-          <meshStandardMaterial
-            color={point.color}
-            emissive={point.color}
-            emissiveIntensity={1.3}
-            roughness={0.34}
-          />
-        </mesh>
+    <group ref={groupRef}>
+      {trackPoints.slice(0, activeNodeCount).map((point, index) => (
+        <AnimatedTrackNode
+          index={index}
+          isFinal={isFinal}
+          key={point.id}
+          point={point}
+          visual={visual}
+        />
       ))}
     </group>
   );
