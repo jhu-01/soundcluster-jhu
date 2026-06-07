@@ -300,7 +300,7 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 
   </details>
 
-- [ ] #22 [Feat] 분석 결과 영속 데이터 모델 확장
+- [x] #22 [Feat] 분석 결과 영속 데이터 모델 확장
   <details>
   <summary>🔍 작업 내용 보기</summary>
 
@@ -308,14 +308,14 @@ R3F 캔버스 위에 검색 입력, 분석 버튼, 진행률, 5축 감성 슬라
 현재 `analysis_cache`는 JSON 캐시에 집중되어 있으므로, 검색/공유/재사용을 위해 트랙 메타데이터와 감성 벡터를 조회 가능한 컬럼 구조로 확장합니다.
 
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] `tracks` 또는 확장된 `analysis_cache` 컬럼 설계
-- [ ] energy, valence, tempoDensity, spaceDepth, tension 컬럼 인덱싱 여부 검토
-- [ ] 기존 JSON 캐시와 새 컬럼 간 동기화 로직 추가
-- [ ] 동일 곡 분석 이력 조회 API 초안 구현
+- [x] `tracks` 또는 확장된 `analysis_cache` 컬럼 설계
+- [x] energy, valence, tempoDensity, spaceDepth, tension 컬럼 인덱싱 여부 검토
+- [x] 기존 JSON 캐시와 새 컬럼 간 동기화 로직 추가
+- [x] 동일 곡 분석 이력 조회 API 초안 구현
 
 ## ✅ 검증 방법
-- [ ] MySQL에서 테이블 schema 확인
-- [ ] 같은 곡 분석 후 벡터 컬럼과 JSON 값이 일치하는지 확인
+- [x] MySQL에서 테이블 schema 확인
+- [x] 같은 곡 분석 후 벡터 컬럼과 JSON 값이 일치하는지 확인
 
   </details>
 

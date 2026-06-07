@@ -1,9 +1,11 @@
 import { generateMusicAnalysis } from "../config/gemini.js";
 import {
   createAnalysisCacheKey,
+  findAnalysisHistoryBySong,
   findAnalysisCacheByKey,
   saveAnalysisCache,
 } from "../repositories/analysisCache.js";
+import type { AnalysisHistoryItem } from "../repositories/analysisCache.js";
 import {
   ANALYZE_CACHE_HIT_MESSAGE,
   ANALYZE_STREAM_EVENTS,
@@ -87,4 +89,14 @@ export const generateAnalysisEvent = async (
   await saveAnalysisCache(cacheKey, analysisRequest.musicMetadata, analysis);
 
   return createDoneEvent(analysis, "Analysis completed and cached.");
+};
+
+export const getAnalysisHistory = async (
+  input: AnalyzeRequestInput,
+): Promise<AnalysisHistoryItem[]> => {
+  if (!input.title || !input.artist) {
+    return [];
+  }
+
+  return findAnalysisHistoryBySong(input.title, input.artist);
 };

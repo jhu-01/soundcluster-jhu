@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import {
   ANALYZE_CACHE_MISS_EVENTS,
+  ANALYZE_HISTORY_ROUTE,
   ANALYZE_STREAM_HEADERS,
   ANALYZE_STREAM_RETRY_MS,
 } from "../../../shared/constants/analyzeStream.js";
@@ -10,6 +11,7 @@ import {
   ANALYZE_STREAM_STEP_DELAY_MS,
   buildAnalysisRequest,
   findCachedAnalysisEvent,
+  getAnalysisHistory,
   generateAnalysisEvent,
 } from "../services/analyzeService.js";
 
@@ -78,4 +80,23 @@ export const streamAnalyzeController = async (
 
   writeStreamEvent(response, await generateAnalysisEvent(analysisRequest));
   response.end();
+};
+
+export const getAnalysisHistoryController = async (
+  request: Request,
+  response: Response,
+): Promise<void> => {
+  const title = readQueryString(request.query.title);
+  const artist = readQueryString(request.query.artist);
+
+  if (!title || !artist) {
+    response.status(400).json({
+      error: `${ANALYZE_HISTORY_ROUTE} requires title and artist query parameters`,
+    });
+    return;
+  }
+
+  response.json({
+    items: await getAnalysisHistory({ title, artist }),
+  });
 };

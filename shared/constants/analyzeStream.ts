@@ -2,6 +2,7 @@ import type { AnalyzeStreamEvent } from "../types/analyzeStream.js";
 
 export const ANALYZE_ROUTE_PREFIX = "/api/analyze";
 export const ANALYZE_STREAM_ROUTE = "/stream";
+export const ANALYZE_HISTORY_ROUTE = "/history";
 
 export const ANALYZE_STREAM_HEADERS = {
   "Content-Type": "text/event-stream",
