@@ -1,11 +1,28 @@
 .shell {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  color: #e8f6f2;
+  background: #06120f;
+}
+
+.canvasLayer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+.canvasLayer canvas {
+  display: block;
+}
+
+.contentLayer {
   min-height: 100svh;
   padding: 48px;
-  color: var(--color-text);
   background:
-    linear-gradient(135deg, rgba(15, 118, 110, 0.14), transparent 36%),
-    linear-gradient(315deg, rgba(190, 24, 93, 0.12), transparent 38%),
-    var(--color-bg);
+    linear-gradient(90deg, rgba(6, 18, 15, 0.86), rgba(6, 18, 15, 0.18) 64%),
+    linear-gradient(0deg, rgba(6, 18, 15, 0.72), rgba(6, 18, 15, 0.06) 48%);
 }
 
 .header {
@@ -29,7 +46,7 @@
 
 .eyebrow {
   margin: 0 0 8px;
-  color: var(--color-accent);
+  color: #5eead4;
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
@@ -38,7 +55,7 @@
 .title {
   max-width: 760px;
   margin: 0;
-  color: var(--color-heading);
+  color: #f8fffc;
   font-size: 48px;
   line-height: 1.05;
 }
@@ -46,10 +63,10 @@
 .badge {
   flex: 0 0 auto;
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(148, 163, 184, 0.34);
   border-radius: 8px;
-  color: var(--color-heading);
-  background: var(--color-surface);
+  color: #ecfeff;
+  background: rgba(8, 27, 24, 0.72);
   font-size: 13px;
   font-weight: 700;
 }
@@ -66,7 +83,8 @@
 .stage {
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: var(--color-surface);
+  background: rgba(8, 27, 24, 0.76);
+  backdrop-filter: blur(12px);
   box-shadow: var(--shadow-panel);
 }
 
@@ -78,7 +96,7 @@
 .metricLabel {
   display: block;
   margin-bottom: 12px;
-  color: var(--color-muted);
+  color: #9fb8b3;
   font-size: 13px;
   font-weight: 700;
 }
@@ -86,7 +104,7 @@
 .metricValue {
   display: block;
   margin-bottom: 10px;
-  color: var(--color-heading);
+  color: #f8fffc;
   font-size: 28px;
   line-height: 1.1;
   overflow-wrap: anywhere;
@@ -95,7 +113,7 @@
 .metricDetail,
 .stageDescription {
   margin: 0;
-  color: var(--color-muted);
+  color: #b7c9c5;
   line-height: 1.55;
 }
 
@@ -121,7 +139,7 @@
 
 .stageTitle {
   margin: 0;
-  color: var(--color-heading);
+  color: #f8fffc;
   font-size: 18px;
 }
 
@@ -129,14 +147,18 @@
   flex: 0 0 auto;
   padding: 4px 8px;
   border-radius: 999px;
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
+  color: #5eead4;
+  background: rgba(20, 184, 166, 0.14);
   font-size: 12px;
   font-weight: 700;
 }
 
 @media (max-width: 800px) {
   .shell {
+    overflow: auto;
+  }
+
+  .contentLayer {
     padding: 28px 18px;
   }
 

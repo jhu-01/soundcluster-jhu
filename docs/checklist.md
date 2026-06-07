@@ -80,16 +80,16 @@ Vite를 이용해 엄격한 타입스크립트 기반의 React SPA 환경을 빌
 - [x] 컴포넌트별 격리된 스타일 사수를 위한 `.module.css` 네이밍 컨벤션 적용 테스트
 
   </details>
-- [ ] #8 [Feat] Three.js 및 R3F(React Three Fiber) 기본 캔버스 구동
+- [x] #8 [Feat] Three.js 및 R3F(React Three Fiber) 기본 캔버스 구동
   <details>
   <summary>🔍 이슈 내용 보기</summary>
   ## 🎯 작업 개요
 3D 그래픽스 연산을 위해 R3F 패키지를 설치하고, 마우스로 이리저리 돌려볼 수 있는 가상의 3D 공간과 바닥 격자판(Grid)을 구현합니다.
 ## 📋 세부 작업 태스크 (Todo)
-- [ ] `three`, `@types/three`, `@react-three/fiber`, `@react-three/drei` 패키지 설치
-- [ ] `client/src/canvas/StarsCanvas.tsx` 기본 메인 캔버스 컴포넌트 생성
-- [ ] 마우스 회전/확대를 위한 `<OrbitControls />` 컴포넌트 이식 및 구동 확인
-- [ ] 공간 감각을 주기 위한 바닥면 네온 그리드(`GridBase.tsx`) 가이드라인 레이아웃 배치
+- [x] `three`, `@types/three`, `@react-three/fiber`, `@react-three/drei` 패키지 설치
+- [x] `client/src/canvas/StarsCanvas.tsx` 기본 메인 캔버스 컴포넌트 생성
+- [x] 마우스 회전/확대를 위한 `<OrbitControls />` 컴포넌트 이식 및 구동 확인
+- [x] 공간 감각을 주기 위한 바닥면 네온 그리드(`GridBase.tsx`) 가이드라인 레이아웃 배치
 
   </details>
 - [ ] #9 [Feat] 백엔드 SSE(Server-Sent Events) 스트리밍 API 구현

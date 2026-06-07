@@ -1,4 +1,12 @@
+import { lazy, Suspense } from "react";
+
 import styles from "./App.module.css";
+
+const StarsCanvas = lazy(() =>
+  import("./canvas/StarsCanvas").then((module) => ({
+    default: module.StarsCanvas,
+  })),
+);
 
 interface PipelineStage {
   label: string;
@@ -25,8 +33,8 @@ const pipelineStages: PipelineStage[] = [
   },
   {
     label: "Canvas",
-    status: "pending",
-    description: "R3F scene setup starts in checklist item #8.",
+    status: "ready",
+    description: "R3F scene, OrbitControls, and neon grid are running.",
   },
 ];
 
@@ -59,36 +67,49 @@ const getStatusLabel = (status: PipelineStage["status"]): string => {
 export default function App() {
   return (
     <main className={styles.shell}>
-      <section className={styles.header}>
-        <div className={styles.brandGroup}>
-          <img className={styles.logo} src="/favicon.svg" alt="" aria-hidden="true" />
-          <p className={styles.eyebrow}>SoundCluster</p>
-          <h1 className={styles.title}>Emotion analysis workspace</h1>
-        </div>
-        <div className={styles.badge}>Vite + React + TS</div>
-      </section>
+      <div className={styles.canvasLayer} aria-hidden="true">
+        <Suspense fallback={null}>
+          <StarsCanvas />
+        </Suspense>
+      </div>
 
-      <section className={styles.metrics} aria-label="Project metrics">
-        {metricCards.map((metric) => (
-          <article className={styles.metricCard} key={metric.label}>
-            <span className={styles.metricLabel}>{metric.label}</span>
-            <strong className={styles.metricValue}>{metric.value}</strong>
-            <p className={styles.metricDetail}>{metric.detail}</p>
-          </article>
-        ))}
-      </section>
+      <div className={styles.contentLayer}>
+        <section className={styles.header}>
+          <div className={styles.brandGroup}>
+            <img
+              className={styles.logo}
+              src="/favicon.svg"
+              alt=""
+              aria-hidden="true"
+            />
+            <p className={styles.eyebrow}>SoundCluster</p>
+            <h1 className={styles.title}>Emotion analysis workspace</h1>
+          </div>
+          <div className={styles.badge}>R3F Canvas</div>
+        </section>
 
-      <section className={styles.pipeline} aria-label="Implementation pipeline">
-        {pipelineStages.map((stage) => (
-          <article className={styles.stage} key={stage.label}>
-            <div className={styles.stageHeader}>
-              <h2 className={styles.stageTitle}>{stage.label}</h2>
-              <span className={styles.status}>{getStatusLabel(stage.status)}</span>
-            </div>
-            <p className={styles.stageDescription}>{stage.description}</p>
-          </article>
-        ))}
-      </section>
+        <section className={styles.metrics} aria-label="Project metrics">
+          {metricCards.map((metric) => (
+            <article className={styles.metricCard} key={metric.label}>
+              <span className={styles.metricLabel}>{metric.label}</span>
+              <strong className={styles.metricValue}>{metric.value}</strong>
+              <p className={styles.metricDetail}>{metric.detail}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className={styles.pipeline} aria-label="Implementation pipeline">
+          {pipelineStages.map((stage) => (
+            <article className={styles.stage} key={stage.label}>
+              <div className={styles.stageHeader}>
+                <h2 className={styles.stageTitle}>{stage.label}</h2>
+                <span className={styles.status}>{getStatusLabel(stage.status)}</span>
+              </div>
+              <p className={styles.stageDescription}>{stage.description}</p>
+            </article>
+          ))}
+        </section>
+      </div>
     </main>
   );
 }
