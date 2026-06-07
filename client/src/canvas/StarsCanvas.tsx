@@ -1,23 +1,19 @@
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import type { Vector3 } from "three";
+import { Vector3 } from "three";
 
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 import { mapEmotionVectorsToScenePoints } from "../utils/mds";
+import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
+import { StarNode } from "./StarNode";
+import type { StarNodeData } from "./StarNode";
 
 interface MockTrack {
   id: string;
   title: string;
   artist: string;
   emotions: EmotionVector;
-}
-
-interface TrackPoint {
-  id: string;
-  position: Vector3;
-  color: string;
-  scale: number;
 }
 
 const mockTracks: MockTrack[] = [
@@ -87,13 +83,15 @@ const mockTrackPositions = mapEmotionVectorsToScenePoints(
   mockTracks.map((track) => track.emotions),
 );
 
-const createTrackPoint = (track: MockTrack, index: number): TrackPoint => {
+const createTrackPoint = (track: MockTrack, index: number): StarNodeData => {
   const { emotions } = track;
   const hue = Math.round(180 + emotions.valence * 120 - emotions.tension * 42);
   const lightness = Math.round(48 + emotions.energy * 18);
 
   return {
     id: track.id,
+    title: track.title,
+    artist: track.artist,
     position: mockTrackPositions[index],
     color: `hsl(${hue} 86% ${lightness}%)`,
     scale: 0.16 + emotions.tempoDensity * 0.24,
@@ -101,20 +99,15 @@ const createTrackPoint = (track: MockTrack, index: number): TrackPoint => {
 };
 
 const trackPoints = mockTracks.map(createTrackPoint);
+const clusterFocusPoint = trackPoints.reduce((focusPoint, point) => {
+  return focusPoint.add(point.position);
+}, new Vector3()).divideScalar(trackPoints.length);
 
 function TrackNodes() {
   return (
     <group>
-      {trackPoints.map((point) => (
-        <mesh key={point.id} position={point.position}>
-          <sphereGeometry args={[point.scale, 32, 32]} />
-          <meshStandardMaterial
-            color={point.color}
-            emissive={point.color}
-            emissiveIntensity={1.3}
-            roughness={0.34}
-          />
-        </mesh>
+      {trackPoints.map((point, index) => (
+        <StarNode index={index} key={point.id} node={point} />
       ))}
     </group>
   );
@@ -123,7 +116,7 @@ function TrackNodes() {
 export function StarsCanvas() {
   return (
     <Canvas
-      camera={{ position: [6.4, 4.8, 7.6], fov: 48 }}
+      camera={{ position: [9.6, 6.8, 10.8], fov: 48 }}
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: false }}
     >
@@ -134,12 +127,14 @@ export function StarsCanvas() {
       <Stars radius={64} depth={34} count={1400} factor={4} fade speed={0.35} />
       <GridBase />
       <TrackNodes />
+      <ClusterCameraRig focusPoint={clusterFocusPoint} />
       <OrbitControls
         enableDamping
         dampingFactor={0.06}
         maxDistance={16}
         maxPolarAngle={Math.PI * 0.48}
         minDistance={4}
+        target={clusterFocusPoint.toArray()}
       />
     </Canvas>
   );
