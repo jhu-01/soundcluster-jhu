@@ -1,6 +1,6 @@
 .panel {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   width: min(320px, calc(100vw - 32px));
   padding: 12px;
   border: 1px solid rgba(209, 250, 229, 0.14);
@@ -10,9 +10,46 @@
   backdrop-filter: blur(18px);
 }
 
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgba(236, 254, 255, 0.84);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.summary output {
+  color: rgba(236, 254, 255, 0.58);
+  font-variant-numeric: tabular-nums;
+}
+
 .control {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 20px 10px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 6px;
+  padding: 0 8px;
+  background: rgba(6, 18, 15, 0.44);
+}
+
+.control[data-active="false"] {
+  opacity: 0.48;
+}
+
+.control input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.swatch {
+  width: 8px;
+  height: 18px;
+  border-radius: 999px;
 }
 
 .header {
@@ -28,9 +65,4 @@
 .header output {
   color: rgba(236, 254, 255, 0.64);
   font-variant-numeric: tabular-nums;
-}
-
-.control input {
-  width: 100%;
-  height: 18px;
 }

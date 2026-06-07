@@ -1,7 +1,10 @@
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 
+export type EmotionAxis = keyof EmotionVector;
+export type AxisSelection = Record<EmotionAxis, boolean>;
+
 export interface EmotionAxisConfig {
-  key: keyof EmotionVector;
+  key: EmotionAxis;
   label: string;
   accentColor: string;
 }
@@ -21,3 +24,13 @@ export const DEFAULT_EMOTION_VECTOR: EmotionVector = {
   spaceDepth: 0.5,
   tension: 0.5,
 };
+
+export const DEFAULT_AXIS_SELECTION: AxisSelection = {
+  energy: true,
+  valence: true,
+  tempoDensity: true,
+  spaceDepth: true,
+  tension: true,
+};
+
+export const MIN_ACTIVE_AXIS_COUNT = 2;

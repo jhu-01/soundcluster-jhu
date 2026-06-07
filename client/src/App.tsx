@@ -4,25 +4,55 @@ import type { EmotionVector } from "../../shared/types/musicAnalysis";
 import { StarsCanvas } from "./canvas/StarsCanvas";
 import { ControlPanel } from "./components/ControlPanel";
 import { SearchBar } from "./components/SearchBar";
-import { DEFAULT_EMOTION_VECTOR } from "./constants/emotionControls";
+import {
+  DEFAULT_AXIS_SELECTION,
+  DEFAULT_EMOTION_VECTOR,
+  MIN_ACTIVE_AXIS_COUNT,
+  type AxisSelection,
+  type EmotionAxis,
+} from "./constants/emotionControls";
 import { useSearchStream } from "./hooks/useSearchStream";
 import styles from "./App.module.css";
 
+const countActiveAxes = (axisSelection: AxisSelection): number => {
+  return Object.values(axisSelection).filter(Boolean).length;
+};
+
 export default function App() {
-  const [emotionControls, setEmotionControls] = useState<EmotionVector>(
+  const [analysisEmotions, setAnalysisEmotions] = useState<EmotionVector>(
     DEFAULT_EMOTION_VECTOR,
+  );
+  const [axisSelection, setAxisSelection] = useState<AxisSelection>(
+    DEFAULT_AXIS_SELECTION,
   );
   const applyAnalysisResult = useCallback(
     (emotions: EmotionVector): void => {
-      setEmotionControls(emotions);
+      setAnalysisEmotions(emotions);
     },
     [],
   );
   const searchStream = useSearchStream(applyAnalysisResult);
+  const toggleAxis = useCallback((axis: EmotionAxis): void => {
+    setAxisSelection((previousSelection) => {
+      const nextValue = !previousSelection[axis];
+
+      if (!nextValue && countActiveAxes(previousSelection) <= MIN_ACTIVE_AXIS_COUNT) {
+        return previousSelection;
+      }
+
+      return {
+        ...previousSelection,
+        [axis]: nextValue,
+      };
+    });
+  }, []);
 
   return (
     <main className={styles.shell}>
-      <StarsCanvas vectorControls={emotionControls} />
+      <StarsCanvas
+        activeEmotions={analysisEmotions}
+        axisSelection={axisSelection}
+      />
       <div className={styles.hud}>
         <SearchBar
           onSubmit={searchStream.startSearchStream}
@@ -30,7 +60,11 @@ export default function App() {
           status={searchStream.state.status}
           statusMessage={searchStream.state.message}
         />
-        <ControlPanel onChange={setEmotionControls} value={emotionControls} />
+        <ControlPanel
+          axisSelection={axisSelection}
+          onToggleAxis={toggleAxis}
+          values={analysisEmotions}
+        />
       </div>
     </main>
   );
