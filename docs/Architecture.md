@@ -1,38 +1,100 @@
+# SoundCluster Architecture
+
+이 문서는 SoundCluster의 기준 디렉토리 구조와 각 레이어의 책임을 정의합니다. 새 파일을 만들거나 기존 파일을 이동할 때는 이 구조를 우선합니다.
+
+```text
 soundcluster/
-├── client/                          # Frontend Layer (Vite + TS + R3F)
-│   ├── public/                      # 3D 텍스처, 오디오 등 정적 에셋 스토리지
+├── client/                              # Frontend Layer: Vite + React + TS + R3F
+│   ├── public/                          # 정적 에셋
 │   └── src/
-│       ├── canvas/                  # 3D WebGL (React Three Fiber) 컴포넌트 스코프
-│       │   ├── GridBase.tsx         # 바닥 네온 가이드라인 격자
-│       │   ├── StarsCanvas.tsx      # R3F 배경 및 카메라 컨트롤 메인 캔버스
-│       │   ├── StarNode.tsx         # 개별 곡 오브젝트 (매 프레임 lerp 감속 적용)
-│       │   └── StarNodeCollection.tsx # Gemini 수집 데이터 기반 별 노드 그룹 관리
-│       ├── components/              # Foreground HUD 2D HTML 컴포넌트 스코프
-│       │   ├── ControlPanel.tsx     # MDS 차원 축소 감성 축 제어 슬라이더
-│       │   ├── SearchBar.tsx        # 곡 및 아티스트 입력 검색창
-│       │   ├── ShareModal.tsx       # Short URL (NanoID) 링크 복사 모달
-│       │   └── StreamingLogViewer.tsx # SSE 분석 상태 및 수신 실시간 로그 뷰어
-│       ├── context/                 # 전역 상태 관리 컨텍스트 레이어
-│       ├── hooks/                   # 클라이언트 사이드 커스텀 훅 (API fetch 제어)
-│       ├── styles/                  # CSS Modules 전용 디자인 토큰 스타일 규칙
-│       ├── App.tsx                  # 클라이언트 라우팅 분기 컨트롤러
-│       └── main.tsx                 # 앱 진입점 (Vite DOM Mount)
+│       ├── canvas/                      # 3D WebGL / React Three Fiber 컴포넌트
+│       │   ├── GridBase.tsx             # 바닥 그리드
+│       │   ├── StarsCanvas.tsx          # R3F 메인 캔버스와 카메라 컨트롤
+│       │   ├── StarNode.tsx             # 개별 음악 노드
+│       │   └── StarNodeCollection.tsx   # 음악 노드 그룹 관리
+│       ├── components/                  # 2D HUD 및 일반 React 컴포넌트
+│       │   ├── ControlPanel.tsx         # 5차원 감성 축 제어
+│       │   ├── SearchBar.tsx            # 곡과 아티스트 검색 입력
+│       │   ├── ShareModal.tsx           # 공유 링크 모달
+│       │   └── StreamingLogViewer.tsx   # SSE 분석 상태 로그
+│       ├── context/                     # 전역 상태 컨텍스트
+│       ├── hooks/                       # 클라이언트 커스텀 훅
+│       ├── styles/                      # CSS Modules 및 디자인 토큰
+│       ├── App.tsx                      # 앱 루트
+│       └── main.tsx                     # Vite 진입점
 │
-├── server/                          # Backend Layer (Express.js)
+├── server/                              # Backend Layer: Express
 │   └── src/
-│       ├── config/                  # 외부 인프라 연동 환경 설정 (db.ts, gemini.ts)
-│       ├── controllers/             # Spotify 데이터 바인딩, SSE 스트리밍 제어 컨트롤러
-│       ├── routes/                  # API 엔드포인트 라우팅 레이어
-│       └── app.ts                   # Express 서버 진입점 및 미들웨어 세팅
+│       ├── config/                      # 환경 설정, DB, Gemini 클라이언트
+│       ├── controllers/                 # 요청 처리와 스트리밍 제어
+│       ├── routes/                      # API 라우팅
+│       └── app.ts                       # Express 서버 진입점
 │
-├── shared/                          # Common Shared Layer (중복 제거 및 동기화)
-│   ├── constants/                   # 백엔드 경로, 포트 번호, 상용 URL 고정 상수 (const화)
-│   ├── types/                       # 5차원 감성 벡터, 스포티파이 메타데이터 Strict Interface
-│   └── utils/                       # 순수 함수 기반 유틸리티 (가사 파싱, 데이터 정규화 연산)
+├── shared/                              # Shared Layer
+│   ├── constants/                       # 클라이언트와 서버가 공유하는 상수
+│   ├── types/                           # 공통 타입
+│   └── utils/                           # 순수 유틸리티
 │
-├── docs/                            # 프로젝트 문서 저장소
-│   ├── gemini.md                    # AI 에이전트 자율 가드레일 지침서
-│   └── architecture.md              # 본 시스템 구조 명세 문서 (현재 파일)
+├── docs/                                # 프로젝트 문서
+│   ├── AGENTS.md                        # AI 에이전트 작업 지침
+│   ├── Architecture.md                  # 아키텍처 기준 문서
+│   ├── checklist.md                     # 구현 체크리스트
+│   └── prompt-guideline.md              # Gemini 분석 프롬프트 명세
 │
-├── .gitignore                       # node_modules 및 .env 등 형상 관리 제외 설정
-└── README.md                        # 프로젝트 전반 서술 메인 파일
+├── .gitignore
+├── package.json
+├── pnpm-lock.yaml
+└── README.md
+```
+
+---
+
+## Layer Responsibilities
+
+### `client/`
+
+사용자 인터페이스와 3D 시각화를 담당합니다.
+
+- 서버와 통신해 음악 분석 스트림을 수신합니다.
+- 수신한 감성 벡터를 상태에 반영합니다.
+- 5차원 데이터를 3D 좌표로 변환해 R3F 캔버스에 렌더링합니다.
+- UI 스타일은 CSS Modules로 격리합니다.
+
+### `server/`
+
+외부 API 연동, 분석 파이프라인, 캐싱, SSE 스트리밍을 담당합니다.
+
+- Spotify와 Gemini API Key를 서버에서만 관리합니다.
+- Gemini 응답을 JSON으로 검증합니다.
+- MySQL 캐시를 조회하고 저장합니다.
+- 분석 진행 상태와 결과를 SSE로 클라이언트에 전달합니다.
+
+### `shared/`
+
+클라이언트와 서버가 공유하는 계약을 보관합니다.
+
+- 감성 벡터, 음악 메타데이터, SSE 이벤트 타입을 정의합니다.
+- API 경로와 고정 상수를 관리합니다.
+- 순수 계산 함수와 데이터 정규화 유틸을 제공합니다.
+
+### `docs/`
+
+프로젝트 의사결정과 에이전트 작업 기준을 보관합니다.
+
+- `AGENTS.md`: Codex와 Gemini 등 AI 에이전트가 따를 작업 지침
+- `Architecture.md`: 디렉토리와 레이어 책임
+- `checklist.md`: 구현 순서와 이슈 단위 작업
+- `prompt-guideline.md`: Gemini 분석 프롬프트와 JSON 출력 계약
+
+---
+
+## File Placement Rules
+
+- 화면에 직접 렌더링되는 React 컴포넌트는 `client/src/components/`에 둡니다.
+- R3F 또는 Three.js 렌더링 컴포넌트는 `client/src/canvas/`에 둡니다.
+- 클라이언트 전용 API 구독 로직은 `client/src/hooks/`에 둡니다.
+- 서버 라우트는 `server/src/routes/`, 요청 처리 로직은 `server/src/controllers/`에 둡니다.
+- 환경 변수, DB 연결, Gemini 클라이언트 초기화는 `server/src/config/`에 둡니다.
+- 양쪽에서 공유하는 타입과 상수는 `shared/`에 둡니다.
+
+새 레이어나 최상위 디렉토리가 필요하면 기존 구조로 해결할 수 없는 이유를 먼저 확인합니다.
