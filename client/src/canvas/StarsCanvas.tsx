@@ -48,12 +48,14 @@ const createTrackPoint = (track: ClusterShareTrack): TrackPoint => {
 };
 
 interface TrackNodesProps {
+  onPreviewTrack: (trackId: string | null) => void;
   onSelectTrack: (trackId: string) => void;
   selectedTrackId: string | null;
   tracks: ClusterShareTrack[];
 }
 
 function TrackNodes({
+  onPreviewTrack,
   onSelectTrack,
   selectedTrackId,
   tracks,
@@ -76,6 +78,15 @@ function TrackNodes({
           onClick={(event) => {
             event.stopPropagation();
             handleSelectTrack(point.id);
+            onPreviewTrack(point.id);
+          }}
+          onPointerOut={(event) => {
+            event.stopPropagation();
+            onPreviewTrack(null);
+          }}
+          onPointerOver={(event) => {
+            event.stopPropagation();
+            onPreviewTrack(point.id);
           }}
           position={point.position}
           scale={
@@ -137,11 +148,16 @@ function CameraController({
 }
 
 interface StarsCanvasProps {
+  onPreviewTrack: (trackId: string | null) => void;
   onSnapshotChange: (snapshot: ClusterShareSnapshot) => void;
   snapshot: ClusterShareSnapshot;
 }
 
-export function StarsCanvas({ onSnapshotChange, snapshot }: StarsCanvasProps) {
+export function StarsCanvas({
+  onPreviewTrack,
+  onSnapshotChange,
+  snapshot,
+}: StarsCanvasProps) {
   const cameraSettings = useMemo(() => {
     return { position: snapshot.cameraPosition, fov: CAMERA_FOV };
   }, [snapshot.cameraPosition]);
@@ -170,6 +186,7 @@ export function StarsCanvas({ onSnapshotChange, snapshot }: StarsCanvasProps) {
       camera={cameraSettings}
       dpr={CANVAS_DPR}
       gl={CANVAS_GL}
+      onPointerMissed={() => onPreviewTrack(null)}
     >
       <color attach="background" args={["#06120f"]} />
       <ambientLight intensity={0.54} />
@@ -178,6 +195,7 @@ export function StarsCanvas({ onSnapshotChange, snapshot }: StarsCanvasProps) {
       <Stars {...STAR_FIELD_CONFIG} fade />
       <GridBase />
       <TrackNodes
+        onPreviewTrack={onPreviewTrack}
         onSelectTrack={updateSelectedTrack}
         selectedTrackId={snapshot.selectedTrackId}
         tracks={snapshot.tracks}

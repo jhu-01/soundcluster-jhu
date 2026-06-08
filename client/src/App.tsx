@@ -4,6 +4,7 @@ import type { ItunesTrackMetadata } from "../../shared/types/itunes";
 import { ItunesSearchPanel } from "./components/ItunesSearchPanel";
 import { ShareModal } from "./components/ShareModal";
 import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
+import { TrackHoverCard } from "./components/TrackHoverCard";
 import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
@@ -86,6 +87,14 @@ export default function App() {
     initialSnapshot ?? createDefaultSnapshot(),
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
+  const previewTrack = useMemo(() => {
+    if (!previewTrackId) {
+      return null;
+    }
+
+    return snapshot.tracks.find((track) => track.id === previewTrackId) ?? null;
+  }, [previewTrackId, snapshot.tracks]);
   const mutateSnapshot = useCallback(() => {
     const nextSnapshot = createMutatedSnapshot(snapshot);
 
@@ -119,8 +128,13 @@ export default function App() {
       <Suspense
         fallback={<div className={styles.canvasFallback}>Loading 3D space</div>}
       >
-        <StarsCanvas onSnapshotChange={setSnapshot} snapshot={snapshot} />
+        <StarsCanvas
+          onPreviewTrack={setPreviewTrackId}
+          onSnapshotChange={setSnapshot}
+          snapshot={snapshot}
+        />
       </Suspense>
+      <TrackHoverCard track={previewTrack} />
       <button
         className={styles.shareButton}
         onClick={() => setIsShareOpen(true)}
