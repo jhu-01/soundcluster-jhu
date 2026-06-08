@@ -16,7 +16,7 @@ soundcluster/
 │       │   ├── ControlPanel.tsx         # 5차원 감성 축 제어
 │       │   ├── SearchBar.tsx            # 곡과 아티스트 검색 입력
 │       │   ├── ShareModal.tsx           # 공유 링크 모달
-│       │   └── StreamingLogViewer.tsx   # SSE 분석 상태 로그
+│       │   └── ItunesSearchPanel.tsx     # iTunes 검색 결과 패널
 │       ├── context/                     # 전역 상태 컨텍스트
 │       ├── hooks/                       # 클라이언트 커스텀 훅
 │       ├── styles/                      # CSS Modules 및 디자인 토큰

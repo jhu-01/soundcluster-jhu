@@ -14,7 +14,7 @@
     0 12px 28px rgba(0, 0, 0, 0.36),
     0 0 24px rgba(124, 77, 255, 0.2);
   pointer-events: none;
-  transform: translate(-50%, calc(-100% - 18px));
+  transform: translateY(calc(-100% - 18px));
   backdrop-filter: blur(16px);
   will-change: transform;
 }

@@ -32,9 +32,11 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Selected, nearest, and farthest tracks keep their metadata popups pinned.
 - Pinned selected and nearest metadata popups should be separated horizontally when they are likely to overlap.
 - Selected track metadata belongs in the bottom-center HUD, while nearest and farthest metadata belongs above each related point.
+- Track metadata popups should stay centered above their anchor point; avoid extra horizontal CSS translation when the 3D HTML anchor is already centered.
 - Hovering any non-pinned track temporarily shows the same metadata popup.
 - Pinned relation popups use gradient borders to distinguish selected, nearest, and farthest states.
 - Selected, nearest, and farthest song markers also show a thin gradient ring around the point itself.
+- The right control panel is labeled Emotions and should not include internal analysis stream or debug UI.
 - The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
 
 ## Concrete Style Rules

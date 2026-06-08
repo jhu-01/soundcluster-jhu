@@ -22,9 +22,9 @@ export function ControlPanel({
   const activeAxisCount = countActiveAxes(axisSelection);
 
   return (
-    <section className={styles.panel} aria-label="Emotion axis controls">
+    <section className={styles.panel} aria-label="Emotion controls">
       <div className={styles.summary}>
-        <span>Axes</span>
+        <span>Emotions</span>
         <output>{activeAxisCount} / 5</output>
       </div>
       {EMOTION_AXIS_CONFIGS.map((axis) => {

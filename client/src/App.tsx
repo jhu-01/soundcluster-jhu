@@ -8,14 +8,12 @@ import {
   useState,
 } from "react";
 
-import { ANALYZE_CACHE_HIT_MESSAGE } from "../../shared/constants/analyzeStream";
 import type { ItunesTrackMetadata } from "../../shared/types/itunes";
 import type { MusicAnalysisResponse } from "../../shared/types/musicAnalysis";
 import { ControlPanel } from "./components/ControlPanel";
 import { ItunesSearchPanel } from "./components/ItunesSearchPanel";
 import { SearchBar } from "./components/SearchBar";
 import { ShareModal } from "./components/ShareModal";
-import { StreamingLogViewer } from "./components/StreamingLogViewer";
 import {
   DEFAULT_AXIS_SELECTION,
   MIN_ACTIVE_AXIS_COUNT,
@@ -107,9 +105,6 @@ function SoundClusterApp() {
       ) ?? null
     );
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
-  const isCacheHit = useMemo(() => {
-    return state.events.some((event) => event.message === ANALYZE_CACHE_HIT_MESSAGE);
-  }, [state.events]);
   const ignorePreviewTrack = useCallback((trackId: string | null): void => {
     void trackId;
   }, []);
@@ -190,12 +185,6 @@ function SoundClusterApp() {
         <ControlPanel
           axisSelection={axisSelection}
           onToggleAxis={toggleAxis}
-        />
-        <StreamingLogViewer
-          events={state.events}
-          isCacheHit={isCacheHit}
-          result={state.result}
-          status={state.status}
         />
       </div>
       <button
