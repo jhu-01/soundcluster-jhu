@@ -18,6 +18,36 @@ Boostcamp Web & Mobile SNU 2026 — Solo Project
 
 ---
 
+## ✅ Integrated Feature Scope
+
+Current `dev` integration includes:
+
+* Gemini JSON analysis with MySQL-backed cache and persistent analysis fields
+* SSE analysis streaming from backend to frontend
+* R3F 3D emotion-space rendering with axis on/off projection controls
+* HUD search form, stream progress log, and emotion-axis panel
+* iTunes Search API metadata lookup for title, artist, album image, and track id
+* Shareable 3D snapshot URLs with compact encoding and legacy decode support
+* Hover metadata card, selected-track state, nearest/farthest relation highlights, and relation lines
+* Automated contract tests for analysis, snapshot encoding, 5D mapping, and relation recomputation
+
+Detailed PR notes: [`docs/dev-merge-pr.md`](docs/dev-merge-pr.md)
+
+## 📋 Checklist Status
+
+Implementation checklist `#2` through `#30` is completed in [`docs/checklist.md`](docs/checklist.md).
+
+Validation commands:
+
+```powershell
+corepack pnpm run test
+corepack pnpm run lint
+corepack pnpm run server:build
+corepack pnpm run build
+```
+
+---
+
 # 👥 Author & License
 - Author: 정현우 / jhu-01
 

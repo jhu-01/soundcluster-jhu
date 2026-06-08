@@ -2,7 +2,6 @@ import {
   lazy,
   Suspense,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -166,19 +165,29 @@ function SoundClusterApp() {
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
+  const visibleSnapshot = useMemo(() => {
+    if (!state.result) {
+      return snapshot;
+    }
+
+    return applyAnalysisResultToSnapshot(snapshot, state.result);
+  }, [snapshot, state.result]);
   const selectedTrack = useMemo(() => {
-    return findSelectedTrack(snapshot.tracks, snapshot.selectedTrackId);
-  }, [snapshot.selectedTrackId, snapshot.tracks]);
+    return findSelectedTrack(visibleSnapshot.tracks, visibleSnapshot.selectedTrackId);
+  }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
   const previewTrack = useMemo(() => {
     if (!previewTrackId) {
       return null;
     }
 
-    return findSnapshotTrack(snapshot.tracks, previewTrackId);
-  }, [previewTrackId, snapshot.tracks]);
+    return findSnapshotTrack(visibleSnapshot.tracks, previewTrackId);
+  }, [previewTrackId, visibleSnapshot.tracks]);
   const relation = useMemo(() => {
-    return createTrackRelationSummary(snapshot.tracks, snapshot.selectedTrackId);
-  }, [snapshot.selectedTrackId, snapshot.tracks]);
+    return createTrackRelationSummary(
+      visibleSnapshot.tracks,
+      visibleSnapshot.selectedTrackId,
+    );
+  }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
   const previewRelationLabel = useMemo(() => {
     if (!previewTrack || !relation) {
       return null;
@@ -217,7 +226,7 @@ function SoundClusterApp() {
     });
   }, []);
   const mutateSnapshot = useCallback(() => {
-    const nextSnapshot = createMutatedSnapshot(snapshot);
+    const nextSnapshot = createMutatedSnapshot(visibleSnapshot);
 
     window.history.replaceState(
       null,
@@ -225,7 +234,7 @@ function SoundClusterApp() {
       createShareSnapshotUrl(nextSnapshot, window.location.href),
     );
     setSnapshot(nextSnapshot);
-  }, [snapshot]);
+  }, [visibleSnapshot]);
   const bindItunesTrack = useCallback((track: ItunesTrackMetadata) => {
     setSnapshot((currentSnapshot) => {
       const nextTrack = createTrackFromItunesMetadata(track);
@@ -244,16 +253,6 @@ function SoundClusterApp() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!state.result) {
-      return;
-    }
-
-    setSnapshot((currentSnapshot) => {
-      return applyAnalysisResultToSnapshot(currentSnapshot, state.result);
-    });
-  }, [state.result]);
-
   return (
     <main className={styles.shell}>
       <Suspense
@@ -264,7 +263,7 @@ function SoundClusterApp() {
           onPreviewTrack={setPreviewTrackId}
           onSnapshotChange={setSnapshot}
           relation={relation}
-          snapshot={snapshot}
+          snapshot={visibleSnapshot}
         />
       </Suspense>
       <TrackHoverCard
@@ -299,14 +298,14 @@ function SoundClusterApp() {
           <ItunesSearchPanel onSelectTrack={bindItunesTrack} />
           <SnapshotDebugPanel
             onMutateSnapshot={mutateSnapshot}
-            snapshot={snapshot}
+            snapshot={visibleSnapshot}
           />
         </>
       ) : null}
       <ShareModal
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
-        snapshot={snapshot}
+        snapshot={visibleSnapshot}
       />
     </main>
   );
