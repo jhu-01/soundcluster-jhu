@@ -23,7 +23,6 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   min-height: 58px;
   padding: 0 18px;
   border-bottom: 1px solid rgba(173, 190, 220, 0.08);
@@ -33,21 +32,6 @@
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 0;
-}
-
-.header output {
-  display: grid;
-  min-width: 30px;
-  height: 30px;
-  place-items: center;
-  padding: 0 9px;
-  border-radius: 999px;
-  color: var(--color-text-primary);
-  background: linear-gradient(135deg, #8b6cff, #5f35f5);
-  box-shadow: 0 0 20px rgba(139, 108, 255, 0.28);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 900;
 }
 
 .status {

@@ -129,9 +129,7 @@ function SoundClusterApp() {
   const [itunesItems, setItunesItems] = useState<ItunesTrackMetadata[]>([]);
   const [itunesSearchStatus, setItunesSearchStatus] =
     useState<ItunesSearchStatus>("idle");
-  const [itunesSearchMessage, setItunesSearchMessage] = useState(
-    "Search by song title or artist.",
-  );
+  const [itunesSearchMessage, setItunesSearchMessage] = useState("");
   const [extractingTrackId, setExtractingTrackId] = useState<string | null>(null);
   const [lyricsLookupTrackId, setLyricsLookupTrackId] = useState<string | null>(
     null,

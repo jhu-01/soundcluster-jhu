@@ -18,7 +18,6 @@ export function ItunesSearchPanel({
     <section className={styles.panel} aria-label="iTunes search results">
       <div className={styles.header}>
         <strong>Search Results</strong>
-        <output>{items.length}</output>
       </div>
       {status === "loading" ? (
         <p className={styles.status}>Searching iTunes...</p>

@@ -54,12 +54,14 @@ export function SearchBar({ message, onSearch, status }: SearchBarProps) {
         <button disabled={isLoading} type="submit">
           {isLoading ? "Searching" : "Search"}
         </button>
-        <output
-          className={styles.message}
-          data-error={Boolean(validationMessage) || status === "error"}
-        >
-          {visibleMessage}
-        </output>
+        {visibleMessage ? (
+          <output
+            className={styles.message}
+            data-error={Boolean(validationMessage) || status === "error"}
+          >
+            {visibleMessage}
+          </output>
+        ) : null}
       </div>
     </form>
   );
