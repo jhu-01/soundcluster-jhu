@@ -6,6 +6,7 @@ export const ANALYZE_STREAM_STATUS_EVENT_NAMES = [
   "fetching",
   "analyzing",
   "done",
+  "failed",
 ] as const;
 export const ANALYZE_HISTORY_ROUTE = "/history";
 

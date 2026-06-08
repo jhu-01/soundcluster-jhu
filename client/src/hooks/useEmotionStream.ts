@@ -141,6 +141,20 @@ export const useEmotionStream = (): EmotionStreamController => {
 
   const applyStreamEvent = useCallback(
     (streamEvent: AnalyzeStreamEvent): void => {
+      if (streamEvent.status === "failed") {
+        setState((previousState) => ({
+          status: "error",
+          request: previousState.request,
+          events: [...previousState.events, streamEvent],
+          latestEvent: streamEvent,
+          result: previousState.result,
+          errorMessage: streamEvent.errorMessage ?? streamEvent.message,
+          isActive: false,
+        }));
+        closeStream();
+        return;
+      }
+
       setState((previousState) => ({
         status: streamEvent.status === "done" ? "done" : "streaming",
         request: previousState.request,

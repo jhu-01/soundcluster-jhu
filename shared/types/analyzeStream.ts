@@ -1,13 +1,14 @@
 import type { MusicAnalysisResponse } from "./musicAnalysis.js";
 
-export type AnalyzeStreamStatus = "fetching" | "analyzing" | "done";
+export type AnalyzeStreamStatus = "fetching" | "analyzing" | "done" | "failed";
 
 export type AnalyzeStreamPhase =
   | "metadata"
   | "lyrics"
   | "vectorizing"
   | "mapping"
-  | "complete";
+  | "complete"
+  | "failed";
 
 export interface AnalyzeStreamVisualFrame {
   intensity: number;
@@ -21,5 +22,6 @@ export interface AnalyzeStreamEvent {
   progress: number;
   message: string;
   visual: AnalyzeStreamVisualFrame;
+  errorMessage?: string;
   result?: MusicAnalysisResponse;
 }

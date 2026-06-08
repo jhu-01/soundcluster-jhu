@@ -164,6 +164,10 @@ export const searchLyrics = async (
     },
   });
 
+  if (response.status === 404) {
+    return createEmptyLyricsResponse(input);
+  }
+
   if (!response.ok) {
     throw new Error(`LRCLIB lyrics request failed with status ${response.status}`);
   }

@@ -39,6 +39,31 @@ const readQueryString = (
   return undefined;
 };
 
+const resolveErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+};
+
+const createFailedEvent = (error: unknown): AnalyzeStreamEvent => {
+  const errorMessage = resolveErrorMessage(error);
+
+  return {
+    status: "failed",
+    phase: "failed",
+    progress: 100,
+    message: "Analysis stream failed before completion.",
+    errorMessage,
+    visual: {
+      intensity: 0.18,
+      activeNodeCount: 0,
+      color: "#ff7795",
+    },
+  };
+};
+
 export const streamAnalyzeController = async (
   request: Request,
   response: Response,
@@ -52,34 +77,47 @@ export const streamAnalyzeController = async (
   response.writeHead(200, ANALYZE_STREAM_HEADERS);
   response.write(`retry: ${ANALYZE_STREAM_RETRY_MS}\n\n`);
 
-  const analysisRequest = buildAnalysisRequest({
-    title: readQueryString(request.query.title),
-    artist: readQueryString(request.query.artist),
-    lyrics: readQueryString(request.query.lyrics),
-  });
-  const cachedEvent = await findCachedAnalysisEvent(analysisRequest);
+  try {
+    const analysisRequest = buildAnalysisRequest({
+      title: readQueryString(request.query.title),
+      artist: readQueryString(request.query.artist),
+      lyrics: readQueryString(request.query.lyrics),
+    });
+    const cachedEvent = await findCachedAnalysisEvent(analysisRequest);
 
-  if (cachedEvent) {
-    writeStreamEvent(response, cachedEvent);
-    response.end();
-    return;
-  }
+    if (cachedEvent) {
+      writeStreamEvent(response, cachedEvent);
+      response.end();
+      return;
+    }
 
-  for (const event of ANALYZE_CACHE_MISS_EVENTS) {
     if (!isClientConnected) {
       return;
     }
 
-    writeStreamEvent(response, event);
-    await wait(ANALYZE_STREAM_STEP_DELAY_MS);
-  }
+    for (const event of ANALYZE_CACHE_MISS_EVENTS) {
+      if (!isClientConnected) {
+        return;
+      }
 
-  if (!isClientConnected) {
-    return;
-  }
+      writeStreamEvent(response, event);
+      await wait(ANALYZE_STREAM_STEP_DELAY_MS);
+    }
 
-  writeStreamEvent(response, await generateAnalysisEvent(analysisRequest));
-  response.end();
+    if (!isClientConnected) {
+      return;
+    }
+
+    writeStreamEvent(response, await generateAnalysisEvent(analysisRequest));
+    response.end();
+  } catch (error: unknown) {
+    if (!isClientConnected || response.writableEnded) {
+      return;
+    }
+
+    writeStreamEvent(response, createFailedEvent(error));
+    response.end();
+  }
 };
 
 export const getAnalysisHistoryController = async (
