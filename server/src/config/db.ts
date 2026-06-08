@@ -1,4 +1,4 @@
-import mysql, { type PoolOptions } from "mysql2/promise";
+import mysql, { type PoolOptions, type RowDataPacket } from "mysql2/promise";
 
 import {
   DATABASE_CONNECTED_MESSAGE,
@@ -6,7 +6,24 @@ import {
   DATABASE_ENV_KEYS,
 } from "../../../shared/constants/database.js";
 import { readNumberEnv, readStringEnv } from "./env.js";
-import { createAnalysisCacheTableSql } from "../database/schema.js";
+import {
+  ANALYSIS_CACHE_EMOTION_INDEX_NAME,
+  analysisCacheEmotionColumns,
+  backfillAnalysisCacheEmotionColumnsSql,
+  createAddAnalysisCacheEmotionColumnSql,
+  createAnalysisCacheEmotionIndexSql,
+  createAnalysisCacheTableSql,
+  selectAnalysisCacheColumnNamesSql,
+  selectAnalysisCacheEmotionIndexSql,
+} from "../database/schema.js";
+
+interface SchemaColumnRow extends RowDataPacket {
+  COLUMN_NAME: string;
+}
+
+interface SchemaIndexRow extends RowDataPacket {
+  INDEX_NAME: string;
+}
 
 const databasePoolOptions: PoolOptions = {
   host: readStringEnv(DATABASE_ENV_KEYS.host, DATABASE_DEFAULT_CONFIG.host),
@@ -22,12 +39,44 @@ const databasePoolOptions: PoolOptions = {
 
 export const databasePool = mysql.createPool(databasePoolOptions);
 
+const ensureAnalysisCacheSchema = async (
+  connection: mysql.PoolConnection,
+): Promise<void> => {
+  await connection.query(createAnalysisCacheTableSql);
+
+  const [columnRows] = await connection.query<SchemaColumnRow[]>(
+    selectAnalysisCacheColumnNamesSql,
+  );
+  const existingColumnNames = new Set(
+    columnRows.map((row) => row.COLUMN_NAME),
+  );
+
+  for (const column of analysisCacheEmotionColumns) {
+    if (!existingColumnNames.has(column.name)) {
+      await connection.query(createAddAnalysisCacheEmotionColumnSql(column.name));
+    }
+  }
+
+  await connection.query(backfillAnalysisCacheEmotionColumnsSql);
+
+  const [indexRows] = await connection.query<SchemaIndexRow[]>(
+    selectAnalysisCacheEmotionIndexSql,
+  );
+  const hasEmotionIndex = indexRows.some(
+    (row) => row.INDEX_NAME === ANALYSIS_CACHE_EMOTION_INDEX_NAME,
+  );
+
+  if (!hasEmotionIndex) {
+    await connection.query(createAnalysisCacheEmotionIndexSql);
+  }
+};
+
 export const checkDatabaseConnection = async (): Promise<void> => {
   const connection = await databasePool.getConnection();
 
   try {
     await connection.ping();
-    await connection.query(createAnalysisCacheTableSql);
+    await ensureAnalysisCacheSchema(connection);
     console.log(DATABASE_CONNECTED_MESSAGE);
   } finally {
     connection.release();

@@ -7,6 +7,7 @@ export const ANALYZE_STREAM_STATUS_EVENT_NAMES = [
   "analyzing",
   "done",
 ] as const;
+export const ANALYZE_HISTORY_ROUTE = "/history";
 
 export const ANALYZE_STREAM_HEADERS = {
   "Content-Type": "text/event-stream",
