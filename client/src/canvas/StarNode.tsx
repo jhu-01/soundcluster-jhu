@@ -1,9 +1,13 @@
+import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import { AdditiveBlending, Color, Vector3 } from "three";
 import type { Group, Mesh, MeshStandardMaterial } from "three";
 
+import styles from "./StarNode.module.css";
+
 export interface StarNodeData {
+  albumImageUrl?: string | null;
   id: string;
   title: string;
   artist: string;
@@ -27,8 +31,12 @@ const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
 const NEON_HOVER_COLOR = "#67e8f9";
 const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 12, 12];
-const NODE_CORE_SCALE = 0.54;
-const NODE_GLOW_SCALE = 1.9;
+const NODE_CORE_SCALE = 0.5;
+const NODE_GLOW_SCALE = 1.28;
+
+const createFallbackLabel = (title: string): string => {
+  return title.slice(0, 2).toUpperCase();
+};
 
 const createEntryPosition = (index: number): Vector3 => {
   const angle = index * 2.3999632297;
@@ -104,7 +112,7 @@ export function StarNode({
           blending={AdditiveBlending}
           color={node.color}
           depthWrite={false}
-          opacity={0.2}
+          opacity={0.26}
           transparent
         />
       </mesh>
@@ -119,6 +127,27 @@ export function StarNode({
           roughness={0.12}
         />
       </mesh>
+      {isHovered ? (
+        <Html center distanceFactor={8} position={[0, 0.48, 0]} zIndexRange={[24, 0]}>
+          <aside className={styles.popup} aria-label="Track hover details">
+            {node.albumImageUrl ? (
+              <img
+                alt={`${node.title} album cover`}
+                className={styles.albumImage}
+                src={node.albumImageUrl}
+              />
+            ) : (
+              <span className={styles.albumFallback} aria-hidden="true">
+                {createFallbackLabel(node.title)}
+              </span>
+            )}
+            <span className={styles.metadata}>
+              <strong>{node.title}</strong>
+              <small>{node.artist}</small>
+            </span>
+          </aside>
+        </Html>
+      ) : null}
     </group>
   );
 }

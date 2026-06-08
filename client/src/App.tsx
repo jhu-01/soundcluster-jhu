@@ -15,7 +15,6 @@ import { SearchBar } from "./components/SearchBar";
 import { ShareModal } from "./components/ShareModal";
 import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
 import { StreamingLogViewer } from "./components/StreamingLogViewer";
-import { TrackHoverCard } from "./components/TrackHoverCard";
 import {
   DEFAULT_AXIS_SELECTION,
   MIN_ACTIVE_AXIS_COUNT,
@@ -27,7 +26,6 @@ import { useAnalysis } from "./context/AnalysisContext";
 import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
-import { findSnapshotTrack } from "./utils/snapshotSelection";
 import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
@@ -142,7 +140,6 @@ function SoundClusterApp() {
     DEFAULT_AXIS_SELECTION,
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
   const visibleSnapshot = useMemo(() => {
     if (!state.result) {
       return snapshot;
@@ -150,41 +147,18 @@ function SoundClusterApp() {
 
     return applyAnalysisResultToSnapshot(snapshot, state.result);
   }, [snapshot, state.result]);
-  const previewTrack = useMemo(() => {
-    if (!previewTrackId) {
-      return null;
-    }
-
-    return findSnapshotTrack(visibleSnapshot.tracks, previewTrackId);
-  }, [previewTrackId, visibleSnapshot.tracks]);
   const relation = useMemo(() => {
     return createTrackRelationSummary(
       visibleSnapshot.tracks,
       visibleSnapshot.selectedTrackId,
     );
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
-  const previewRelationLabel = useMemo(() => {
-    if (!previewTrack || !relation) {
-      return null;
-    }
-
-    if (previewTrack.id === relation.selectedTrackId) {
-      return "Selected";
-    }
-
-    if (previewTrack.id === relation.nearestTrackId) {
-      return `Nearest ${relation.nearestDistance.toFixed(3)}`;
-    }
-
-    if (previewTrack.id === relation.farthestTrackId) {
-      return `Farthest ${relation.farthestDistance.toFixed(3)}`;
-    }
-
-    return null;
-  }, [previewTrack, relation]);
   const isCacheHit = useMemo(() => {
     return state.events.some((event) => event.message === ANALYZE_CACHE_HIT_MESSAGE);
   }, [state.events]);
+  const ignorePreviewTrack = useCallback((trackId: string | null): void => {
+    void trackId;
+  }, []);
   const toggleAxis = useCallback((axis: EmotionAxis): void => {
     setAxisSelection((previousSelection) => {
       const nextValue = !previousSelection[axis];
@@ -234,16 +208,12 @@ function SoundClusterApp() {
       >
         <StarsCanvas
           axisSelection={axisSelection}
-          onPreviewTrack={setPreviewTrackId}
+          onPreviewTrack={ignorePreviewTrack}
           onSnapshotChange={setSnapshot}
           relation={relation}
           snapshot={visibleSnapshot}
         />
       </Suspense>
-      <TrackHoverCard
-        relationLabel={previewRelationLabel}
-        track={previewTrack}
-      />
       <header className={styles.topBar}>
         <div className={styles.brand}>
           <strong>SoundCluster</strong>

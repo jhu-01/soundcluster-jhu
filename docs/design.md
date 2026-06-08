@@ -7,6 +7,8 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - The background must look like real outer space, not a tiled UI pattern.
 - Do not use repeating `background-size` star grids for the visible starfield.
 - Stars should have irregular density, mixed brightness, and a few sparse bright points.
+- Visible pin-point stars must belong to the R3F scene so they rotate with OrbitControls.
+- CSS background layers may provide only smooth nebula, vignette, or glow. They must not render star dots.
 - Background motion is limited to opacity/brightness twinkle only. Star positions stay fixed.
 - UI panels should feel like modern glass blocks: darker fill, soft inner border, larger visual padding, subtle highlight on the top edge.
 - The top search area should read as a command bar, not a multi-field admin form.
@@ -14,6 +16,8 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Analysis axes should use switch controls and axis color accents. Axis values are not shown in this panel.
 - Song nodes should read as glowing music points, not plastic 3D balls.
 - Node geometry should be small, flat-lit, emissive, and softened by glow. Use scale and emissive intensity rather than large sphere detail.
+- Song nodes should be only slightly larger than the brightest background stars.
+- Track title, artist, and album cover appear in a small popup anchored above the hovered song node.
 - The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
 
 ## Concrete Style Rules

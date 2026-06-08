@@ -52,10 +52,19 @@ const RELATION_COLORS = {
 } as const;
 const RELATION_LINE_WIDTH = 2;
 const STAR_FIELD_CONFIG = {
-  radius: 72,
-  depth: 42,
-  count: 680,
-  factor: 3.2,
+  radius: 76,
+  depth: 46,
+  count: 1100,
+  factor: 4.8,
+  saturation: 0,
+  speed: 0,
+} as const;
+const BRIGHT_STAR_FIELD_CONFIG = {
+  radius: 58,
+  depth: 28,
+  count: 90,
+  factor: 8,
+  saturation: 0.35,
   speed: 0,
 } as const;
 
@@ -116,6 +125,7 @@ const createBaseTrackPoints = (
 
     return {
       id: track.id,
+      albumImageUrl: track.albumImageUrl,
       title: track.title,
       artist: track.artist,
       position: new Vector3(...positions[index]),
@@ -140,6 +150,7 @@ const createTrackPoints = (
 
     return {
       id: point.id,
+      albumImageUrl: point.albumImageUrl,
       title: point.title,
       artist: point.artist,
       position: point.position,
@@ -328,6 +339,7 @@ export function StarsCanvas({
       <pointLight position={[-5, 2, -3]} intensity={1.28} color="#34e5d6" />
       <pointLight position={[5, 4, 5]} intensity={0.7} color="#7c4dff" />
       <Stars {...STAR_FIELD_CONFIG} fade />
+      <Stars {...BRIGHT_STAR_FIELD_CONFIG} />
       <GridBase />
       <TrackNodes
         axisSelection={axisSelection}
