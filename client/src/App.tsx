@@ -9,6 +9,7 @@ import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
 import { createTrackRelationSummary } from "./utils/trackRelations";
+import { findSnapshotTrack } from "./utils/snapshotSelection";
 import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
@@ -94,7 +95,7 @@ export default function App() {
       return null;
     }
 
-    return snapshot.tracks.find((track) => track.id === previewTrackId) ?? null;
+    return findSnapshotTrack(snapshot.tracks, previewTrackId);
   }, [previewTrackId, snapshot.tracks]);
   const relation = useMemo(() => {
     return createTrackRelationSummary(snapshot.tracks, snapshot.selectedTrackId);

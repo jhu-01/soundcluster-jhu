@@ -15,6 +15,7 @@ import type {
   ClusterShareTrack,
   Vector3Tuple,
 } from "../types/shareSnapshot";
+import { selectSnapshotTrack } from "../utils/snapshotSelection";
 import type { TrackRelationSummary } from "../utils/trackRelations";
 
 interface TrackPoint {
@@ -251,10 +252,7 @@ export function StarsCanvas({
   }, [snapshot.cameraPosition]);
   const updateSelectedTrack = useCallback(
     (selectedTrackId: string) => {
-      onSnapshotChange({
-        ...snapshot,
-        selectedTrackId,
-      });
+      onSnapshotChange(selectSnapshotTrack(snapshot, selectedTrackId));
     },
     [onSnapshotChange, snapshot],
   );
