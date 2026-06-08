@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import type { ClusterShareSnapshot } from "../client/src/types/shareSnapshot.js";
+import { applyAnalysisResultToSnapshotTrack } from "../client/src/utils/analysisSnapshot.js";
 import {
   decodeShareSnapshot,
   encodeShareSnapshot,
@@ -94,5 +95,33 @@ describe("selection relation flow", () => {
     assert.equal(restoredSnapshot?.selectedTrackId, "far");
     assert.equal(restoredRelation?.selectedTrackId, "far");
     assert.equal(restoredRelation?.nearestTrackId, "center");
+  });
+
+  it("applies analysis result only to the extraction target track", () => {
+    const analysisResult = {
+      analysisStatus: "success" as const,
+      musicId: "analysis-target",
+      emotions: {
+        energy: 0.91,
+        valence: 0.12,
+        tempoDensity: 0.87,
+        spaceDepth: 0.33,
+        tension: 0.64,
+      },
+      generatedSummary: "Fixture analysis.",
+    };
+    const selectedChangedSnapshot = selectSnapshotTrack(snapshotFixture, "far");
+    const updatedSnapshot = applyAnalysisResultToSnapshotTrack(
+      selectedChangedSnapshot,
+      analysisResult,
+      "center",
+    );
+
+    assert.equal(updatedSnapshot.selectedTrackId, "far");
+    assert.deepEqual(updatedSnapshot.tracks[0].emotions, analysisResult.emotions);
+    assert.deepEqual(
+      updatedSnapshot.tracks[2].emotions,
+      selectedChangedSnapshot.tracks[2].emotions,
+    );
   });
 });

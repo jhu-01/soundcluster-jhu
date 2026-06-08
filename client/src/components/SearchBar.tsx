@@ -4,6 +4,10 @@ import { useAnalysis } from "../context/AnalysisContext";
 import type { EmotionStreamRequest } from "../hooks/useEmotionStream";
 import styles from "./SearchBar.module.css";
 
+interface SearchBarProps {
+  onAnalyzeStart?: () => void;
+}
+
 interface SearchFormState {
   title: string;
   artist: string;
@@ -59,7 +63,7 @@ const createStreamRequest = (
   };
 };
 
-export function SearchBar() {
+export function SearchBar({ onAnalyzeStart }: SearchBarProps) {
   const { state, startStream } = useAnalysis();
   const [formState, setFormState] = useState<SearchFormState>(INITIAL_FORM_STATE);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
@@ -90,6 +94,7 @@ export function SearchBar() {
     }
 
     setFormState(trimmedFormState);
+    onAnalyzeStart?.();
     startStream(createStreamRequest(trimmedFormState));
   };
 

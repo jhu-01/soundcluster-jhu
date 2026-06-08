@@ -51,7 +51,10 @@ const RELATION_COLORS = {
   nearest: "#5eead4",
   selected: "#facc15",
 } as const;
-const RELATION_LINE_WIDTH = 2;
+const RELATION_LINE_WIDTH = {
+  dashed: 2.1,
+  solid: 2.4,
+} as const;
 const STAR_FIELD_COUNT = 1250;
 const STAR_FIELD_RADIUS = 78;
 
@@ -174,11 +177,13 @@ const createRelationLines = (
     {
       id: "nearest",
       color: RELATION_COLORS.nearest,
+      kind: "solid",
       points: [selectedPoint.position, nearestPoint.position],
     },
     {
       id: "farthest",
       color: RELATION_COLORS.farthest,
+      kind: "dashed",
       points: [selectedPoint.position, farthestPoint.position],
     },
   ];
@@ -204,16 +209,9 @@ function TrackNodes({
   const { state } = useAnalysis();
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
   const isFinal = state.status === "done";
-  const activeTrackCount = Math.min(
-    Math.max(visual.activeNodeCount, 1),
-    tracks.length,
-  );
-  const activeTracks = useMemo(() => {
-    return tracks.slice(0, activeTrackCount);
-  }, [activeTrackCount, tracks]);
   const baseTrackPoints = useMemo(() => {
-    return createBaseTrackPoints(activeTracks, axisSelection);
-  }, [activeTracks, axisSelection]);
+    return createBaseTrackPoints(tracks, axisSelection);
+  }, [axisSelection, tracks]);
   const trackPoints = useMemo(() => {
     return createTrackPoints(baseTrackPoints, visual, isFinal, relation);
   }, [baseTrackPoints, isFinal, relation, visual]);
@@ -230,10 +228,17 @@ function TrackNodes({
         <Line
           key={line.id}
           color={line.color}
-          lineWidth={RELATION_LINE_WIDTH}
+          dashed={line.kind === "dashed"}
+          dashSize={0.18}
+          gapSize={0.16}
+          lineWidth={
+            line.kind === "dashed"
+              ? RELATION_LINE_WIDTH.dashed
+              : RELATION_LINE_WIDTH.solid
+          }
           points={line.points}
           transparent
-          opacity={0.76}
+          opacity={line.kind === "dashed" ? 0.82 : 0.9}
         />
       ))}
       <StarNodeCollection

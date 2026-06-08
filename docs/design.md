@@ -21,6 +21,10 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Song nodes should be only slightly larger than the brightest background stars.
 - Track title, artist, and album cover appear in a small popup anchored above the hovered song node.
 - Song nodes are single-layer markers. Do not stack a separate core and halo mesh for each song.
+- An analysis result is applied only to the track selected when extraction starts.
+- Changing selected track must not overwrite any other track emotion vector.
+- Selection changes recompute nearest/farthest relations while preserving every existing track node.
+- Draw nearest relation as a solid line and farthest relation as a dotted or dashed line from the selected song.
 - The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
 
 ## Concrete Style Rules

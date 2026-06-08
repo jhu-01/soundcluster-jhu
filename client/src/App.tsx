@@ -2,7 +2,9 @@ import {
   lazy,
   Suspense,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -26,6 +28,7 @@ import { useAnalysis } from "./context/AnalysisContext";
 import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
+import { applyAnalysisResultToSnapshotTrack } from "./utils/analysisSnapshot";
 import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
@@ -82,32 +85,6 @@ const createMutatedSnapshot = (
   };
 };
 
-const applyAnalysisResultToSnapshot = (
-  snapshot: ClusterShareSnapshot,
-  result: MusicAnalysisResponse,
-): ClusterShareSnapshot => {
-  const targetTrackId = snapshot.selectedTrackId ?? snapshot.tracks[0]?.id;
-
-  if (!targetTrackId) {
-    return snapshot;
-  }
-
-  return {
-    ...snapshot,
-    selectedTrackId: targetTrackId,
-    tracks: snapshot.tracks.map((track) => {
-      if (track.id !== targetTrackId) {
-        return track;
-      }
-
-      return {
-        ...track,
-        emotions: result.emotions,
-      };
-    }),
-  };
-};
-
 const createTrackFromItunesMetadata = (
   track: ItunesTrackMetadata,
 ): ClusterShareSnapshot["tracks"][number] => {
@@ -130,6 +107,8 @@ const createTrackFromItunesMetadata = (
 
 function SoundClusterApp() {
   const { state } = useAnalysis();
+  const analysisTargetTrackIdRef = useRef<string | null>(null);
+  const appliedAnalysisResultRef = useRef<MusicAnalysisResponse | null>(null);
   const initialSnapshot = useMemo(() => {
     return readShareSnapshotFromLocation(window.location.search);
   }, []);
@@ -140,13 +119,7 @@ function SoundClusterApp() {
     DEFAULT_AXIS_SELECTION,
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const visibleSnapshot = useMemo(() => {
-    if (!state.result) {
-      return snapshot;
-    }
-
-    return applyAnalysisResultToSnapshot(snapshot, state.result);
-  }, [snapshot, state.result]);
+  const visibleSnapshot = snapshot;
   const relation = useMemo(() => {
     return createTrackRelationSummary(
       visibleSnapshot.tracks,
@@ -159,6 +132,10 @@ function SoundClusterApp() {
   const ignorePreviewTrack = useCallback((trackId: string | null): void => {
     void trackId;
   }, []);
+  const rememberAnalysisTarget = useCallback((): void => {
+    analysisTargetTrackIdRef.current =
+      snapshot.selectedTrackId ?? snapshot.tracks[0]?.id ?? null;
+  }, [snapshot.selectedTrackId, snapshot.tracks]);
   const toggleAxis = useCallback((axis: EmotionAxis): void => {
     setAxisSelection((previousSelection) => {
       const nextValue = !previousSelection[axis];
@@ -201,6 +178,23 @@ function SoundClusterApp() {
     });
   }, []);
 
+  useEffect(() => {
+    if (!state.result || appliedAnalysisResultRef.current === state.result) {
+      return;
+    }
+
+    const analysisResult = state.result;
+
+    appliedAnalysisResultRef.current = analysisResult;
+    setSnapshot((currentSnapshot) => {
+      return applyAnalysisResultToSnapshotTrack(
+        currentSnapshot,
+        analysisResult,
+        analysisTargetTrackIdRef.current,
+      );
+    });
+  }, [state.result]);
+
   return (
     <main className={styles.shell}>
       <Suspense
@@ -219,7 +213,7 @@ function SoundClusterApp() {
           <strong>SoundCluster</strong>
           <span>emotion mapped music space</span>
         </div>
-        <SearchBar />
+        <SearchBar onAnalyzeStart={rememberAnalysisTarget} />
       </header>
       <div className={styles.rightRail}>
         <ControlPanel
