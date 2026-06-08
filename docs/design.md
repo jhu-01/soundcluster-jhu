@@ -31,9 +31,10 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Song markers should read as small stars with a white core and soft colored halo, not as solid planets.
 - Selected, nearest, and farthest tracks keep their metadata popups pinned.
 - Pinned selected and nearest metadata popups should be separated horizontally when they are likely to overlap.
+- Selected track metadata belongs in the bottom-center HUD, while nearest and farthest metadata belongs above each related point.
 - Hovering any non-pinned track temporarily shows the same metadata popup.
 - Pinned relation popups use gradient borders to distinguish selected, nearest, and farthest states.
-- Selected, nearest, and farthest song markers also show a gradient ring around the point itself.
+- Selected, nearest, and farthest song markers also show a thin gradient ring around the point itself.
 - The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
 
 ## Concrete Style Rules

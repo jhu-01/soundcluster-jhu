@@ -39,8 +39,6 @@ const NODE_CORE_SCALE = 0.34;
 const NODE_GLOW_SCALE = 2.05;
 const GLOW_TEXTURE_SIZE = 128;
 
-type PopupPlacement = "top" | "left" | "right";
-
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
 };
@@ -83,18 +81,10 @@ const createGlowTexture = (colorValue: string): CanvasTexture => {
   return texture;
 };
 
-const getPopupPlacement = (
+const shouldPinPointPopup = (
   relationRole: StarNodeRelationRole | null,
-): PopupPlacement => {
-  if (relationRole === "selected") {
-    return "left";
-  }
-
-  if (relationRole === "nearest") {
-    return "right";
-  }
-
-  return "top";
+): boolean => {
+  return relationRole === "nearest" || relationRole === "farthest";
 };
 
 export function StarNode({
@@ -115,7 +105,9 @@ export function StarNode({
   const baseColor = useMemo(() => new Color(node.color), [node.color]);
   const coreColor = useMemo(() => new Color(NODE_CORE_COLOR), []);
   const glowTexture = useMemo(() => createGlowTexture(node.color), [node.color]);
-  const popupPlacement = getPopupPlacement(relationRole);
+  const isPointPopupPinned = shouldPinPointPopup(relationRole);
+  const shouldShowPointPopup =
+    isPointPopupPinned || (isHovered && relationRole !== "selected");
 
   useEffect(() => {
     return () => glowTexture.dispose();
@@ -201,12 +193,11 @@ export function StarNode({
           />
         </Html>
       ) : null}
-      {isHovered || relationRole ? (
+      {shouldShowPointPopup ? (
         <Html center distanceFactor={7} position={[0, 0.62, 0]} zIndexRange={[24, 0]}>
           <aside
             className={styles.popup}
-            data-placement={popupPlacement}
-            data-role={relationRole ?? "hover"}
+            data-role={isPointPopupPinned ? relationRole : "hover"}
             aria-label="Track hover details"
           >
             {node.albumImageUrl ? (

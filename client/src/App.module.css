@@ -152,6 +152,84 @@
   box-shadow: 0 0 24px rgba(124, 77, 255, 0.32);
 }
 
+.selectedTrackHud {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: min(390px, calc(100vw - 420px));
+  min-width: 280px;
+  padding: 10px 12px;
+  border: 1px solid rgba(173, 190, 220, 0.16);
+  border-radius: var(--radius-panel);
+  color: var(--color-text-primary);
+  background:
+    linear-gradient(rgba(8, 13, 22, 0.82), rgba(8, 13, 22, 0.82)) padding-box,
+    linear-gradient(135deg, rgba(255, 255, 255, 0.4), #b18cff, #6ee7f9) border-box;
+  box-shadow:
+    var(--panel-top-highlight),
+    0 16px 36px rgba(0, 0, 0, 0.34),
+    0 0 28px rgba(139, 108, 255, 0.2);
+  pointer-events: none;
+  transform: translateX(-50%);
+  backdrop-filter: blur(18px);
+}
+
+.selectedTrackImage,
+.selectedTrackFallback {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.selectedTrackImage {
+  object-fit: cover;
+}
+
+.selectedTrackFallback {
+  color: var(--color-bg);
+  background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-cyan));
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.selectedTrackText {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.selectedTrackText small {
+  color: var(--color-accent-cyan);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.selectedTrackText strong,
+.selectedTrackText span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectedTrackText strong {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.selectedTrackText span {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 @media (max-width: 980px) {
   .topBar {
     grid-template-columns: 1fr;
@@ -161,6 +239,11 @@
     top: auto;
     right: 12px;
     bottom: 76px;
+  }
+
+  .selectedTrackHud {
+    bottom: 96px;
+    width: min(390px, calc(100vw - 24px));
   }
 }
 
@@ -185,6 +268,18 @@
   .shareButton {
     bottom: 12px;
     width: min(260px, calc(100vw - 24px));
+  }
+
+  .selectedTrackHud {
+    grid-template-columns: 46px minmax(0, 1fr);
+    min-width: 0;
+    padding: 9px;
+  }
+
+  .selectedTrackImage,
+  .selectedTrackFallback {
+    width: 46px;
+    height: 46px;
   }
 }
 

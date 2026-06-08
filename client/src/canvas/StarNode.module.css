@@ -19,28 +19,16 @@
   will-change: transform;
 }
 
-.popup[data-placement="left"] {
-  transform: translate(calc(-100% - 24px), -50%);
-}
-
-.popup[data-placement="right"] {
-  transform: translate(24px, -50%);
-}
-
-.popup[data-placement="top"] {
-  transform: translate(-50%, calc(-100% - 18px));
-}
-
 .markerRing {
   display: block;
-  width: 17px;
-  height: 17px;
-  border: 2px solid transparent;
+  width: 15px;
+  height: 15px;
+  border: 1px solid transparent;
   border-radius: 999px;
   background:
     linear-gradient(transparent, transparent) padding-box,
     linear-gradient(135deg, rgba(255, 255, 255, 0.95), #b18cff, #6ee7f9) border-box;
-  box-shadow: 0 0 16px rgba(139, 108, 255, 0.48);
+  box-shadow: 0 0 12px rgba(139, 108, 255, 0.42);
   pointer-events: none;
 }
 
@@ -48,14 +36,14 @@
   background:
     linear-gradient(transparent, transparent) padding-box,
     linear-gradient(135deg, rgba(255, 255, 255, 0.95), #a78bfa, #67e8f9) border-box;
-  box-shadow: 0 0 16px rgba(167, 139, 250, 0.5);
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.44);
 }
 
 .markerRing[data-role="farthest"] {
   background:
     linear-gradient(transparent, transparent) padding-box,
     linear-gradient(135deg, rgba(255, 255, 255, 0.95), #f0abfc, #fb7185) border-box;
-  box-shadow: 0 0 16px rgba(240, 171, 252, 0.46);
+  box-shadow: 0 0 12px rgba(240, 171, 252, 0.4);
 }
 
 .popup[data-role="selected"],

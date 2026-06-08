@@ -15,7 +15,6 @@ import { ControlPanel } from "./components/ControlPanel";
 import { ItunesSearchPanel } from "./components/ItunesSearchPanel";
 import { SearchBar } from "./components/SearchBar";
 import { ShareModal } from "./components/ShareModal";
-import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
 import { StreamingLogViewer } from "./components/StreamingLogViewer";
 import {
   DEFAULT_AXIS_SELECTION,
@@ -29,10 +28,7 @@ import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
 import { applyAnalysisResultToSnapshotTrack } from "./utils/analysisSnapshot";
-import {
-  createShareSnapshotUrl,
-  readShareSnapshotFromLocation,
-} from "./utils/shareSnapshot";
+import { readShareSnapshotFromLocation } from "./utils/shareSnapshot";
 import { createTrackRelationSummary } from "./utils/trackRelations";
 
 const StarsCanvas = lazy(() =>
@@ -52,36 +48,6 @@ const createDefaultSnapshot = (): ClusterShareSnapshot => {
     cameraPosition: [6.4, 4.8, 7.6],
     cameraTarget: [0, 0, 0],
     tracks: mockTracks,
-  };
-};
-
-const clampUnitValue = (value: number): number => {
-  return Math.max(0, Math.min(1, value));
-};
-
-const createMutatedSnapshot = (
-  snapshot: ClusterShareSnapshot,
-): ClusterShareSnapshot => {
-  const targetTrackId = snapshot.selectedTrackId ?? snapshot.tracks[0]?.id;
-
-  return {
-    ...snapshot,
-    selectedTrackId: targetTrackId ?? null,
-    tracks: snapshot.tracks.map((track) => {
-      if (track.id !== targetTrackId) {
-        return track;
-      }
-
-      return {
-        ...track,
-        emotions: {
-          ...track.emotions,
-          energy: clampUnitValue(track.emotions.energy + 0.11),
-          valence: clampUnitValue(track.emotions.valence - 0.09),
-          tension: clampUnitValue(track.emotions.tension + 0.13),
-        },
-      };
-    }),
   };
 };
 
@@ -105,6 +71,10 @@ const createTrackFromItunesMetadata = (
   };
 };
 
+const createFallbackLabel = (title: string): string => {
+  return title.slice(0, 2).toUpperCase();
+};
+
 function SoundClusterApp() {
   const { state } = useAnalysis();
   const analysisTargetTrackIdRef = useRef<string | null>(null);
@@ -124,6 +94,17 @@ function SoundClusterApp() {
     return createTrackRelationSummary(
       visibleSnapshot.tracks,
       visibleSnapshot.selectedTrackId,
+    );
+  }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
+  const selectedTrack = useMemo(() => {
+    if (!visibleSnapshot.selectedTrackId) {
+      return null;
+    }
+
+    return (
+      visibleSnapshot.tracks.find(
+        (track) => track.id === visibleSnapshot.selectedTrackId,
+      ) ?? null
     );
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
   const isCacheHit = useMemo(() => {
@@ -150,16 +131,6 @@ function SoundClusterApp() {
       };
     });
   }, []);
-  const mutateSnapshot = useCallback(() => {
-    const nextSnapshot = createMutatedSnapshot(visibleSnapshot);
-
-    window.history.replaceState(
-      null,
-      "",
-      createShareSnapshotUrl(nextSnapshot, window.location.href),
-    );
-    setSnapshot(nextSnapshot);
-  }, [visibleSnapshot]);
   const bindItunesTrack = useCallback((track: ItunesTrackMetadata) => {
     setSnapshot((currentSnapshot) => {
       const nextTrack = createTrackFromItunesMetadata(track);
@@ -237,13 +208,27 @@ function SoundClusterApp() {
         <span className={styles.shareCta}>Share</span>
       </button>
       {import.meta.env.DEV ? (
-        <>
-          <ItunesSearchPanel onSelectTrack={bindItunesTrack} />
-          <SnapshotDebugPanel
-            onMutateSnapshot={mutateSnapshot}
-            snapshot={visibleSnapshot}
-          />
-        </>
+        <ItunesSearchPanel onSelectTrack={bindItunesTrack} />
+      ) : null}
+      {selectedTrack ? (
+        <aside className={styles.selectedTrackHud} aria-label="Selected track">
+          {selectedTrack.albumImageUrl ? (
+            <img
+              alt={`${selectedTrack.title} album cover`}
+              className={styles.selectedTrackImage}
+              src={selectedTrack.albumImageUrl}
+            />
+          ) : (
+            <span className={styles.selectedTrackFallback} aria-hidden="true">
+              {createFallbackLabel(selectedTrack.title)}
+            </span>
+          )}
+          <span className={styles.selectedTrackText}>
+            <small>Selected</small>
+            <strong>{selectedTrack.title}</strong>
+            <span>{selectedTrack.artist}</span>
+          </span>
+        </aside>
       ) : null}
       <ShareModal
         isOpen={isShareOpen}
