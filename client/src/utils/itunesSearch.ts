@@ -3,18 +3,13 @@ import {
   ITUNES_SEARCH_ROUTE,
 } from "../../../shared/constants/itunes";
 import type { ItunesSearchResponse } from "../../../shared/types/itunes";
-
-const DEFAULT_API_BASE_URL = "http://127.0.0.1:3001";
-
-const readApiBaseUrl = (): string => {
-  return import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE_URL;
-};
+import { API_BASE_URL } from "../constants/api";
 
 export const createItunesSearchUrl = (
   title: string,
   artist: string,
 ): string => {
-  const url = new URL(`${ITUNES_ROUTE_PREFIX}${ITUNES_SEARCH_ROUTE}`, readApiBaseUrl());
+  const url = new URL(`${ITUNES_ROUTE_PREFIX}${ITUNES_SEARCH_ROUTE}`, API_BASE_URL);
 
   url.searchParams.set("title", title);
 

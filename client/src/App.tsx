@@ -27,6 +27,7 @@ import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
 import { applyAnalysisResultToSnapshotTrack } from "./utils/analysisSnapshot";
 import { fetchItunesTracks } from "./utils/itunesSearch";
+import { fetchLyrics } from "./utils/lyricsSearch";
 import { readShareSnapshotFromLocation } from "./utils/shareSnapshot";
 import { createTrackRelationSummary } from "./utils/trackRelations";
 
@@ -76,10 +77,16 @@ const createFallbackLabel = (title: string): string => {
 
 type ItunesSearchStatus = "idle" | "loading" | "error";
 
-interface DebugResponseState {
+type DebugResponseStatus = "idle" | "loading" | "success" | "error";
+
+interface DebugResponseEntry {
   body: unknown;
-  label: string;
-  status: "idle" | "loading" | "success" | "error";
+  status: DebugResponseStatus;
+}
+
+interface DebugResponseState {
+  itunes: DebugResponseEntry;
+  lyrics: DebugResponseEntry;
 }
 
 function SoundClusterApp() {
@@ -103,10 +110,18 @@ function SoundClusterApp() {
     "Search by song title or artist.",
   );
   const [extractingTrackId, setExtractingTrackId] = useState<string | null>(null);
+  const [lyricsLookupTrackId, setLyricsLookupTrackId] = useState<string | null>(
+    null,
+  );
   const [debugResponse, setDebugResponse] = useState<DebugResponseState>({
-    body: null,
-    label: "iTunes search",
-    status: "idle",
+    itunes: {
+      body: null,
+      status: "idle",
+    },
+    lyrics: {
+      body: null,
+      status: "idle",
+    },
   });
   const visibleSnapshot = snapshot;
   const relation = useMemo(() => {
@@ -126,7 +141,52 @@ function SoundClusterApp() {
       ) ?? null
     );
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
-  const activeExtractingTrackId = state.isActive ? extractingTrackId : null;
+  const activeExtractingTrackId =
+    lyricsLookupTrackId ?? (state.isActive ? extractingTrackId : null);
+  const debugPanelBody = useMemo(() => {
+    return {
+      gemini: {
+        errorMessage: state.errorMessage,
+        latestEvent: state.latestEvent,
+        request: state.request,
+        result: state.result,
+        status: state.status,
+      },
+      itunes: debugResponse.itunes,
+      lrclib: debugResponse.lyrics,
+    };
+  }, [
+    debugResponse.itunes,
+    debugResponse.lyrics,
+    state.errorMessage,
+    state.latestEvent,
+    state.request,
+    state.result,
+    state.status,
+  ]);
+  const debugPanelStatus = useMemo<DebugResponseStatus>(() => {
+    if (
+      debugResponse.itunes.status === "error" ||
+      debugResponse.lyrics.status === "error" ||
+      state.status === "error"
+    ) {
+      return "error";
+    }
+
+    if (state.status === "streaming" || state.status === "connecting") {
+      return "loading";
+    }
+
+    if (
+      debugResponse.itunes.status === "success" ||
+      debugResponse.lyrics.status === "success" ||
+      state.status === "done"
+    ) {
+      return "success";
+    }
+
+    return "idle";
+  }, [debugResponse.itunes.status, debugResponse.lyrics.status, state.status]);
   const ignorePreviewTrack = useCallback((trackId: string | null): void => {
     void trackId;
   }, []);
@@ -172,22 +232,26 @@ function SoundClusterApp() {
 
     setItunesSearchStatus("loading");
     setItunesSearchMessage("Searching iTunes...");
-    setDebugResponse({
-      body: { title: trimmedQuery },
-      label: "GET /api/itunes/search",
-      status: "loading",
-    });
+    setDebugResponse((previousResponse) => ({
+      ...previousResponse,
+      itunes: {
+        body: { title: trimmedQuery },
+        status: "loading",
+      },
+    }));
 
     try {
       const response = await fetchItunesTracks(trimmedQuery, "");
 
       setItunesItems(response.items);
       setItunesSearchStatus("idle");
-      setDebugResponse({
-        body: response,
-        label: "GET /api/itunes/search",
-        status: "success",
-      });
+      setDebugResponse((previousResponse) => ({
+        ...previousResponse,
+        itunes: {
+          body: response,
+          status: "success",
+        },
+      }));
       setItunesSearchMessage(
         response.items.length > 0
           ? `${response.items.length} tracks found.`
@@ -198,23 +262,70 @@ function SoundClusterApp() {
 
       setItunesItems([]);
       setItunesSearchStatus("error");
-      setDebugResponse({
-        body: { error: errorMessage },
-        label: "GET /api/itunes/search",
-        status: "error",
-      });
+      setDebugResponse((previousResponse) => ({
+        ...previousResponse,
+        itunes: {
+          body: { error: errorMessage },
+          status: "error",
+        },
+      }));
       setItunesSearchMessage(errorMessage);
     }
   }, []);
   const extractItunesTrack = useCallback(
-    (track: ItunesTrackMetadata): void => {
+    async (track: ItunesTrackMetadata): Promise<void> => {
       analysisTargetTrackIdRef.current = track.itunesTrackId;
       appliedAnalysisResultRef.current = null;
       setExtractingTrackId(track.itunesTrackId);
+      setLyricsLookupTrackId(track.itunesTrackId);
       bindItunesTrack(track);
+      setDebugResponse((previousResponse) => ({
+        ...previousResponse,
+        lyrics: {
+          body: {
+            artist: track.artist,
+            title: track.title,
+          },
+          status: "loading",
+        },
+      }));
+
+      let lyrics = "";
+
+      try {
+        const lyricsResponse = await fetchLyrics(track.title, track.artist);
+
+        lyrics = lyricsResponse.lyrics;
+        setDebugResponse((previousResponse) => ({
+          ...previousResponse,
+          lyrics: {
+            body: lyricsResponse,
+            status: "success",
+          },
+        }));
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        setDebugResponse((previousResponse) => ({
+          ...previousResponse,
+          lyrics: {
+            body: {
+              artist: track.artist,
+              error: errorMessage,
+              fallback: "Gemini will analyze with title and artist only.",
+              title: track.title,
+            },
+            status: "error",
+          },
+        }));
+      } finally {
+        setLyricsLookupTrackId(null);
+      }
+
       startStream({
-        title: track.title,
         artist: track.artist,
+        lyrics,
+        title: track.title,
       });
     },
     [bindItunesTrack, startStream],
@@ -285,10 +396,12 @@ function SoundClusterApp() {
       <aside className={styles.responseDebugPanel} aria-label="API response debug">
         <span className={styles.responseDebugHeader}>
           <strong>Response</strong>
-          <small data-status={debugResponse.status}>{debugResponse.status}</small>
+          <small data-status={debugPanelStatus}>{debugPanelStatus}</small>
         </span>
-        <span className={styles.responseDebugLabel}>{debugResponse.label}</span>
-        <pre>{JSON.stringify(debugResponse.body, null, 2)}</pre>
+        <span className={styles.responseDebugLabel}>
+          iTunes / LRCLIB / Gemini
+        </span>
+        <pre>{JSON.stringify(debugPanelBody, null, 2)}</pre>
       </aside>
       {selectedTrack ? (
         <aside className={styles.selectedTrackHud} aria-label="Selected track">

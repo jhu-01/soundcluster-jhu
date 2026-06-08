@@ -7,7 +7,9 @@ import {
 } from "../shared/constants/analyzeStream.js";
 import { mapEmotionVectorToScenePoint } from "../shared/utils/emotionToPoint.js";
 import { databasePool } from "../server/src/config/db.js";
+import { stripLrclibSyncedLyrics } from "../server/src/config/lyrics.js";
 import { createAnalysisCacheKey } from "../server/src/repositories/analysisCache.js";
+import { buildAnalysisRequest } from "../server/src/services/analyzeService.js";
 import { parseMusicAnalysisResponse } from "../server/src/validation/musicAnalysis.js";
 
 after(async () => {
@@ -73,5 +75,22 @@ describe("analysis pipeline contracts", () => {
     assert.equal(scenePoint.color, "hsl(207 86% 61%)");
     assert.equal(Number(scenePoint.scale.toFixed(3)), 0.323);
     assert.equal(Number(scenePoint.intensity.toFixed(3)), 1.796);
+  });
+
+  it("builds analysis requests without dummy fallback lyrics", () => {
+    const analysisRequest = buildAnalysisRequest({
+      artist: "Sample Artist",
+      title: "Sample Song",
+    });
+
+    assert.equal(analysisRequest.musicMetadata.lyrics, "");
+  });
+
+  it("strips LRCLIB synced timestamps before using lyrics", () => {
+    const lyrics = stripLrclibSyncedLyrics(
+      "[00:10.00]First line\n[00:12.50][00:12.80]Second line",
+    );
+
+    assert.equal(lyrics, "First line\nSecond line");
   });
 });

@@ -45,7 +45,7 @@ export const buildAnalysisRequest = (
   const { musicMetadata } = GEMINI_DUMMY_ANALYSIS_REQUEST;
   const title = input.title ?? musicMetadata.title;
   const artist = input.artist ?? musicMetadata.artist;
-  const lyrics = input.lyrics ?? musicMetadata.lyrics;
+  const lyrics = input.lyrics?.trim() ?? "";
 
   return {
     musicId: createAnalysisCacheKey(title, artist),
