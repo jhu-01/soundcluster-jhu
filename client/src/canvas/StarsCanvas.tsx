@@ -1,5 +1,5 @@
 import { Line, OrbitControls, Stars } from "@react-three/drei";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import {
   useCallback,
   useEffect,
@@ -8,7 +8,6 @@ import {
   type ElementRef,
 } from "react";
 import { Vector3 } from "three";
-import type { Group } from "three";
 
 import type { AnalyzeStreamVisualFrame } from "../../../shared/types/analyzeStream";
 import type { AxisSelection } from "../constants/emotionControls";
@@ -37,7 +36,6 @@ interface StarsCanvasProps {
 const DEFAULT_VISUAL_FRAME: AnalyzeStreamVisualFrame = {
   intensity: 1,
   activeNodeCount: 5,
-  orbitSpeed: 0.08,
   color: "#5eead4",
 };
 const CANVAS_DPR: [number, number] = [1, 1];
@@ -58,7 +56,7 @@ const STAR_FIELD_CONFIG = {
   depth: 34,
   count: 500,
   factor: 4,
-  speed: 0.2,
+  speed: 0,
 } as const;
 
 interface BaseTrackPoint extends StarNodeData {
@@ -206,7 +204,6 @@ function TrackNodes({
   tracks,
 }: TrackNodesProps) {
   const { state } = useAnalysis();
-  const groupRef = useRef<Group>(null);
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
   const isFinal = state.status === "done";
   const activeTrackCount = Math.min(
@@ -229,16 +226,8 @@ function TrackNodes({
     return createRelationLines(visibleTrackPoints, relation);
   }, [relation, visibleTrackPoints]);
 
-  useFrame((_, delta) => {
-    if (!groupRef.current) {
-      return;
-    }
-
-    groupRef.current.rotation.y += delta * visual.orbitSpeed;
-  });
-
   return (
-    <group ref={groupRef}>
+    <group>
       {relationLines.map((line) => (
         <Line
           key={line.id}

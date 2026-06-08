@@ -100,7 +100,6 @@ const isAnalyzeStreamEvent = (value: unknown): value is AnalyzeStreamEvent => {
     isRecord(visual) &&
     typeof visual.intensity === "number" &&
     typeof visual.activeNodeCount === "number" &&
-    typeof visual.orbitSpeed === "number" &&
     typeof visual.color === "string";
 
   return (

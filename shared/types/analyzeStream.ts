@@ -12,7 +12,6 @@ export type AnalyzeStreamPhase =
 export interface AnalyzeStreamVisualFrame {
   intensity: number;
   activeNodeCount: number;
-  orbitSpeed: number;
   color: string;
 }
 

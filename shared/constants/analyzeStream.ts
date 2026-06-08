@@ -29,7 +29,6 @@ export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
     visual: {
       intensity: 0.24,
       activeNodeCount: 1,
-      orbitSpeed: 0.18,
       color: "#22d3ee",
     },
   },
@@ -41,7 +40,6 @@ export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
     visual: {
       intensity: 0.38,
       activeNodeCount: 2,
-      orbitSpeed: 0.26,
       color: "#34d399",
     },
   },
@@ -53,7 +51,6 @@ export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
     visual: {
       intensity: 0.64,
       activeNodeCount: 4,
-      orbitSpeed: 0.42,
       color: "#e879f9",
     },
   },
@@ -65,7 +62,6 @@ export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
     visual: {
       intensity: 0.82,
       activeNodeCount: 5,
-      orbitSpeed: 0.34,
       color: "#f59e0b",
     },
   },
@@ -77,7 +73,6 @@ export const ANALYZE_STREAM_EVENTS: AnalyzeStreamEvent[] = [
     visual: {
       intensity: 1,
       activeNodeCount: 5,
-      orbitSpeed: 0.12,
       color: "#5eead4",
     },
     result: {
