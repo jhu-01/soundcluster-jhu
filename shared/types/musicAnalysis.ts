@@ -1,6 +1,9 @@
 export interface MusicMetadata {
-  title: string;
+  albumImageUrl?: string | null;
   artist: string;
+  itunesTrackId?: string;
+  itunesUrl?: string;
+  title: string;
   lyrics: string;
 }
 

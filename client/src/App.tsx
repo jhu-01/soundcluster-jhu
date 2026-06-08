@@ -8,8 +8,10 @@ import {
 } from "react";
 
 import { ANALYZE_CACHE_HIT_MESSAGE } from "../../shared/constants/analyzeStream";
+import type { ItunesTrackMetadata } from "../../shared/types/itunes";
 import type { MusicAnalysisResponse } from "../../shared/types/musicAnalysis";
 import { ControlPanel } from "./components/ControlPanel";
+import { ItunesSearchPanel } from "./components/ItunesSearchPanel";
 import { SearchBar } from "./components/SearchBar";
 import { ShareModal } from "./components/ShareModal";
 import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
@@ -121,6 +123,26 @@ const applyAnalysisResultToSnapshot = (
   };
 };
 
+const createTrackFromItunesMetadata = (
+  track: ItunesTrackMetadata,
+): ClusterShareSnapshot["tracks"][number] => {
+  return {
+    id: track.itunesTrackId,
+    itunesTrackId: track.itunesTrackId,
+    itunesUrl: track.itunesUrl,
+    albumImageUrl: track.albumImageUrl,
+    title: track.title,
+    artist: track.artist,
+    emotions: {
+      energy: 0.5,
+      valence: 0.5,
+      tempoDensity: 0.5,
+      spaceDepth: 0.5,
+      tension: 0.5,
+    },
+  };
+};
+
 function SoundClusterApp() {
   const { state } = useAnalysis();
   const initialSnapshot = useMemo(() => {
@@ -164,6 +186,23 @@ function SoundClusterApp() {
     );
     setSnapshot(nextSnapshot);
   }, [snapshot]);
+  const bindItunesTrack = useCallback((track: ItunesTrackMetadata) => {
+    setSnapshot((currentSnapshot) => {
+      const nextTrack = createTrackFromItunesMetadata(track);
+      const nextTracks = [
+        nextTrack,
+        ...currentSnapshot.tracks.filter(
+          (snapshotTrack) => snapshotTrack.id !== nextTrack.id,
+        ),
+      ];
+
+      return {
+        ...currentSnapshot,
+        selectedTrackId: nextTrack.id,
+        tracks: nextTracks,
+      };
+    });
+  }, []);
 
   useEffect(() => {
     if (!state.result) {
@@ -210,10 +249,13 @@ function SoundClusterApp() {
         Share
       </button>
       {import.meta.env.DEV ? (
-        <SnapshotDebugPanel
-          onMutateSnapshot={mutateSnapshot}
-          snapshot={snapshot}
-        />
+        <>
+          <ItunesSearchPanel onSelectTrack={bindItunesTrack} />
+          <SnapshotDebugPanel
+            onMutateSnapshot={mutateSnapshot}
+            snapshot={snapshot}
+          />
+        </>
       ) : null}
       <ShareModal
         isOpen={isShareOpen}

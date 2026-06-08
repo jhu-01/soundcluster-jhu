@@ -4,6 +4,7 @@ import type { Server } from "node:http";
 import { checkDatabaseConnection } from "./config/db.js";
 import { generateGeminiText, generateMusicAnalysis } from "./config/gemini.js";
 import { analyzeRouter } from "./routes/analyze.js";
+import { itunesRouter } from "./routes/itunes.js";
 import {
   GEMINI_ANALYSIS_LOG_PREFIX,
   GEMINI_ANALYSIS_TEST_ROUTE,
@@ -13,6 +14,7 @@ import {
   GEMINI_TEST_ROUTE,
 } from "../../shared/constants/gemini.js";
 import { ANALYZE_ROUTE_PREFIX } from "../../shared/constants/analyzeStream.js";
+import { ITUNES_ROUTE_PREFIX } from "../../shared/constants/itunes.js";
 import {
   SERVER_DEFAULT_PORT,
   SERVER_HEALTH_RESPONSE,
@@ -46,6 +48,7 @@ const resolveErrorMessage = (error: unknown): string => {
 export const app = express();
 
 app.use(ANALYZE_ROUTE_PREFIX, analyzeRouter);
+app.use(ITUNES_ROUTE_PREFIX, itunesRouter);
 
 app.get(SERVER_HEALTH_ROUTE, (_request, response) => {
   response.json(SERVER_HEALTH_RESPONSE);

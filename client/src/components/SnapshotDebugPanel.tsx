@@ -27,7 +27,11 @@ export function SnapshotDebugPanel({
       <div>
         <span className={styles.label}>selected</span>
         <strong>{selectedTrack.title}</strong>
+        <small>{selectedTrack.artist}</small>
       </div>
+      {selectedTrack.albumImageUrl ? (
+        <img alt="" className={styles.albumImage} src={selectedTrack.albumImageUrl} />
+      ) : null}
       <div>
         <span className={styles.label}>nodes</span>
         <strong>{snapshot.tracks.length}</strong>

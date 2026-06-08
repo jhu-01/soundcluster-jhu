@@ -3,9 +3,12 @@ import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 export type Vector3Tuple = [number, number, number];
 
 export interface ClusterShareTrack {
+  albumImageUrl?: string | null;
   id: string;
   title: string;
   artist: string;
+  itunesTrackId?: string;
+  itunesUrl?: string;
   emotions: EmotionVector;
 }
 

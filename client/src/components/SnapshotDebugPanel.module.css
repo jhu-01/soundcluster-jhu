@@ -23,6 +23,19 @@
   text-transform: uppercase;
 }
 
+.panel small {
+  display: block;
+  margin-top: 2px;
+  color: #a8c7c2;
+}
+
+.albumImage {
+  width: 76px;
+  height: 76px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
 .values {
   display: flex;
   flex-wrap: wrap;

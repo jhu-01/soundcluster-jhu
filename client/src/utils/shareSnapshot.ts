@@ -27,9 +27,15 @@ const isShareTrack = (value: unknown): value is ClusterShareTrack => {
   const emotions = value.emotions;
 
   return (
+    (value.albumImageUrl === undefined ||
+      value.albumImageUrl === null ||
+      typeof value.albumImageUrl === "string") &&
     typeof value.id === "string" &&
     typeof value.title === "string" &&
     typeof value.artist === "string" &&
+    (value.itunesTrackId === undefined ||
+      typeof value.itunesTrackId === "string") &&
+    (value.itunesUrl === undefined || typeof value.itunesUrl === "string") &&
     typeof emotions.energy === "number" &&
     typeof emotions.valence === "number" &&
     typeof emotions.tempoDensity === "number" &&

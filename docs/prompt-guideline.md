@@ -53,7 +53,7 @@ Gemini의 최종 응답은 아래 구조를 따라야 합니다. 이 구조는 `
 ```json
 {
   "analysisStatus": "success",
-  "musicId": "spotify_track_id_string",
+  "musicId": "external_track_id_string",
   "emotions": {
     "energy": 0.82,
     "valence": 0.21,
