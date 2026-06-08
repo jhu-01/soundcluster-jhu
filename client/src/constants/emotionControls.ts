@@ -7,14 +7,46 @@ export interface EmotionAxisConfig {
   key: EmotionAxis;
   label: string;
   accentColor: string;
+  description: string;
+  mark: string;
 }
 
 export const EMOTION_AXIS_CONFIGS: readonly EmotionAxisConfig[] = [
-  { key: "energy", label: "Energy", accentColor: "#22d3ee" },
-  { key: "valence", label: "Valence", accentColor: "#34d399" },
-  { key: "tempoDensity", label: "Tempo", accentColor: "#f59e0b" },
-  { key: "spaceDepth", label: "Space", accentColor: "#a78bfa" },
-  { key: "tension", label: "Tension", accentColor: "#fb7185" },
+  {
+    key: "energy",
+    label: "Energy",
+    accentColor: "#8b6cff",
+    description: "Intensity and drive",
+    mark: "En",
+  },
+  {
+    key: "valence",
+    label: "Valence",
+    accentColor: "#34e5d6",
+    description: "Positive to melancholic",
+    mark: "Va",
+  },
+  {
+    key: "tempoDensity",
+    label: "Tempo",
+    accentColor: "#ffd166",
+    description: "Rhythm density",
+    mark: "Te",
+  },
+  {
+    key: "spaceDepth",
+    label: "Space",
+    accentColor: "#a78bfa",
+    description: "Wide to intimate",
+    mark: "Sp",
+  },
+  {
+    key: "tension",
+    label: "Tension",
+    accentColor: "#ff7795",
+    description: "Calm to strained",
+    mark: "Tn",
+  },
 ];
 
 export const DEFAULT_EMOTION_VECTOR: EmotionVector = {
