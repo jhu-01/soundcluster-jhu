@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
-import { Color, Vector3 } from "three";
+import { AdditiveBlending, Color, Vector3 } from "three";
 import type { Group, Mesh, MeshStandardMaterial } from "three";
 
 export interface StarNodeData {
@@ -26,7 +26,9 @@ const NODE_HOVER_SPEED = 8.5;
 const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
 const NEON_HOVER_COLOR = "#67e8f9";
-const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 18, 18];
+const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 12, 12];
+const NODE_CORE_SCALE = 0.54;
+const NODE_GLOW_SCALE = 1.9;
 
 const createEntryPosition = (index: number): Vector3 => {
   const angle = index * 2.3999632297;
@@ -64,7 +66,7 @@ export function StarNode({
     const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
     const hoverEasing = 1 - Math.exp(-NODE_HOVER_SPEED * delta);
     const isHighlighted = isHovered || isSelected;
-    const targetScale = isHighlighted ? node.scale * 1.42 : node.scale;
+    const targetScale = node.scale * NODE_CORE_SCALE * (isHighlighted ? 1.55 : 1);
     const nextScale = mesh.scale.x + (targetScale - mesh.scale.x) * hoverEasing;
 
     group.position.lerp(targetPosition, settleEasing);
@@ -96,14 +98,25 @@ export function StarNode({
         onPreview(node);
       }}
     >
-      <mesh ref={meshRef} scale={node.scale}>
+      <mesh scale={node.scale * NODE_GLOW_SCALE}>
+        <sphereGeometry args={NODE_GEOMETRY_ARGS} />
+        <meshBasicMaterial
+          blending={AdditiveBlending}
+          color={node.color}
+          depthWrite={false}
+          opacity={0.2}
+          transparent
+        />
+      </mesh>
+      <mesh ref={meshRef} scale={node.scale * NODE_CORE_SCALE}>
         <sphereGeometry args={NODE_GEOMETRY_ARGS} />
         <meshStandardMaterial
           ref={materialRef}
           color={node.color}
           emissive={node.color}
-          emissiveIntensity={node.intensity}
-          roughness={0.28}
+          emissiveIntensity={node.intensity * 1.6}
+          metalness={0}
+          roughness={0.12}
         />
       </mesh>
     </group>

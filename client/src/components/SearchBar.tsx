@@ -103,7 +103,7 @@ export function SearchBar() {
             maxLength={MAX_TEXT_LENGTHS.title}
             name="title"
             onChange={(event) => updateField("title", event.target.value)}
-            placeholder="Track title"
+            placeholder="Search by song title..."
             value={formState.title}
           />
         </label>
@@ -114,7 +114,7 @@ export function SearchBar() {
             maxLength={MAX_TEXT_LENGTHS.artist}
             name="artist"
             onChange={(event) => updateField("artist", event.target.value)}
-            placeholder="Artist"
+            placeholder="Artist..."
             value={formState.artist}
           />
         </label>

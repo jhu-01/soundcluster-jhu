@@ -1,3 +1,39 @@
+# Visual Reference Refinement - 2026-06-08
+
+Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오후 03_08_30.png`
+
+## Required Corrections
+
+- The background must look like real outer space, not a tiled UI pattern.
+- Do not use repeating `background-size` star grids for the visible starfield.
+- Stars should have irregular density, mixed brightness, and a few sparse bright points.
+- Background motion is limited to opacity/brightness twinkle only. Star positions stay fixed.
+- UI panels should feel like modern glass blocks: darker fill, soft inner border, larger visual padding, subtle highlight on the top edge.
+- The top search area should read as a command bar, not a multi-field admin form.
+- Search results should use compact album rows with strong hierarchy: cover, title, artist, add button.
+- Analysis axes should use switch controls and axis color accents. Axis values are not shown in this panel.
+- Song nodes should read as glowing music points, not plastic 3D balls.
+- Node geometry should be small, flat-lit, emissive, and softened by glow. Use scale and emissive intensity rather than large sphere detail.
+- The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
+
+## Concrete Style Rules
+
+```css
+:root {
+  --radius-panel: 14px;
+  --radius-control: 10px;
+  --panel-fill: rgba(10, 16, 26, 0.76);
+  --panel-border: rgba(173, 190, 220, 0.14);
+  --panel-highlight: rgba(255, 255, 255, 0.08);
+}
+```
+
+- Panels may use `14px` radius because this design system intentionally follows the rounded glass block reference.
+- Controls use `10px` radius, while tiny icon buttons may remain circular.
+- Avoid visible repeated dots, checker patterns, tiled gradients, and regular star spacing.
+- The starfield may be CSS-only, but every visible star layer must be non-repeating.
+- Prefer asymmetric positions such as `13% 22%`, `61% 7%`, `84% 41%`, not evenly spaced rows or columns.
+
 # SoundCluster UI Design Brief
 
 > Codex 전달용 UI/UX 구현 명세  

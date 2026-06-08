@@ -12,7 +12,7 @@
   align-items: center;
   padding: 10px;
   border: 1px solid rgba(52, 229, 214, 0.32);
-  border-radius: 8px;
+  border-radius: var(--radius-panel);
   color: var(--color-text-primary);
   background: var(--color-panel-strong);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
@@ -24,7 +24,7 @@
 .albumFallback {
   width: 72px;
   height: 72px;
-  border-radius: 7px;
+  border-radius: var(--radius-control);
 }
 
 .albumImage {

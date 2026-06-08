@@ -3,10 +3,10 @@
   gap: 10px;
   width: 100%;
   padding: 12px;
-  border: 1px solid var(--color-panel-border);
-  border-radius: 8px;
-  background: var(--color-panel);
-  box-shadow: var(--shadow-panel);
+  border: 1px solid rgba(173, 190, 220, 0.14);
+  border-radius: var(--radius-panel);
+  background: linear-gradient(180deg, rgba(16, 24, 38, 0.78), rgba(9, 14, 24, 0.72));
+  box-shadow: var(--panel-top-highlight), var(--shadow-panel);
   backdrop-filter: blur(18px);
 }
 

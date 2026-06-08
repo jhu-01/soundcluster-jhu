@@ -268,7 +268,9 @@ function SoundClusterApp() {
         onClick={() => setIsShareOpen(true)}
         type="button"
       >
-        Share
+        <span className={styles.shareTitle}>Share Your Cluster</span>
+        <span className={styles.shareHint}>Current view is ready to share.</span>
+        <span className={styles.shareCta}>Share</span>
       </button>
       {import.meta.env.DEV ? (
         <>

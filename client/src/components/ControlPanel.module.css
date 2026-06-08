@@ -3,10 +3,10 @@
   gap: 9px;
   width: 100%;
   padding: 12px;
-  border: 1px solid var(--color-panel-border);
-  border-radius: 8px;
-  background: var(--color-panel);
-  box-shadow: var(--shadow-panel);
+  border: 1px solid rgba(173, 190, 220, 0.14);
+  border-radius: var(--radius-panel);
+  background: linear-gradient(180deg, rgba(16, 24, 38, 0.82), rgba(9, 14, 24, 0.76));
+  box-shadow: var(--panel-top-highlight), var(--shadow-panel);
   backdrop-filter: blur(18px);
 }
 
@@ -31,9 +31,9 @@
   gap: 9px;
   min-height: 38px;
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   padding: 0 9px;
-  background: rgba(2, 4, 10, 0.48);
+  background: rgba(9, 14, 24, 0.52);
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, opacity 160ms ease;
 }

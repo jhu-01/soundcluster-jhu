@@ -52,10 +52,10 @@ const RELATION_COLORS = {
 } as const;
 const RELATION_LINE_WIDTH = 2;
 const STAR_FIELD_CONFIG = {
-  radius: 64,
-  depth: 34,
-  count: 500,
-  factor: 4,
+  radius: 72,
+  depth: 42,
+  count: 680,
+  factor: 3.2,
   speed: 0,
 } as const;
 
