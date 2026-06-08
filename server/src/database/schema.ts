@@ -12,6 +12,7 @@ export const analysisCacheEmotionColumns = [
 ] as const;
 
 export const ANALYSIS_CACHE_EMOTION_INDEX_NAME = "idx_analysis_cache_emotions";
+export const SHARE_SNAPSHOT_HASH_INDEX_NAME = "idx_share_snapshots_hash";
 
 export const createAnalysisCacheTableSql = `
   CREATE TABLE IF NOT EXISTS ${ANALYSIS_CACHE_TABLE_NAME} (
@@ -40,10 +41,37 @@ export const createAnalysisCacheTableSql = `
 export const createShareSnapshotTableSql = `
   CREATE TABLE IF NOT EXISTS ${SHARE_SNAPSHOT_TABLE_NAME} (
     share_id VARCHAR(32) PRIMARY KEY,
+    snapshot_hash CHAR(64) NULL,
     snapshot_json JSON NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE INDEX ${SHARE_SNAPSHOT_HASH_INDEX_NAME} (snapshot_hash)
   )
+`;
+
+export const selectShareSnapshotColumnNamesSql = `
+  SELECT COLUMN_NAME
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = '${SHARE_SNAPSHOT_TABLE_NAME}'
+`;
+
+export const selectShareSnapshotHashIndexSql = `
+  SELECT INDEX_NAME
+  FROM INFORMATION_SCHEMA.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = '${SHARE_SNAPSHOT_TABLE_NAME}'
+    AND INDEX_NAME = '${SHARE_SNAPSHOT_HASH_INDEX_NAME}'
+  LIMIT 1
+`;
+
+export const createAddShareSnapshotHashColumnSql = `
+  ALTER TABLE ${SHARE_SNAPSHOT_TABLE_NAME} ADD COLUMN snapshot_hash CHAR(64) NULL
+`;
+
+export const createShareSnapshotHashIndexSql = `
+  CREATE UNIQUE INDEX ${SHARE_SNAPSHOT_HASH_INDEX_NAME}
+  ON ${SHARE_SNAPSHOT_TABLE_NAME} (snapshot_hash)
 `;
 
 export const selectAnalysisCacheColumnNamesSql = `

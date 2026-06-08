@@ -20,6 +20,11 @@ export interface ClusterShareSnapshot {
   tracks: ClusterShareTrack[];
 }
 
+export interface ShareSnapshotData {
+  version: 1;
+  tracks: ClusterShareTrack[];
+}
+
 export interface CreateShareSnapshotResponse {
   shareId: string;
 }

@@ -8,14 +8,19 @@ import {
 import { readNumberEnv, readStringEnv } from "./env.js";
 import {
   ANALYSIS_CACHE_EMOTION_INDEX_NAME,
+  SHARE_SNAPSHOT_HASH_INDEX_NAME,
   analysisCacheEmotionColumns,
   backfillAnalysisCacheEmotionColumnsSql,
   createAddAnalysisCacheEmotionColumnSql,
+  createAddShareSnapshotHashColumnSql,
   createAnalysisCacheEmotionIndexSql,
   createAnalysisCacheTableSql,
+  createShareSnapshotHashIndexSql,
   createShareSnapshotTableSql,
   selectAnalysisCacheColumnNamesSql,
   selectAnalysisCacheEmotionIndexSql,
+  selectShareSnapshotColumnNamesSql,
+  selectShareSnapshotHashIndexSql,
 } from "../database/schema.js";
 
 interface SchemaColumnRow extends RowDataPacket {
@@ -76,6 +81,28 @@ const ensureShareSnapshotSchema = async (
   connection: mysql.PoolConnection,
 ): Promise<void> => {
   await connection.query(createShareSnapshotTableSql);
+
+  const [columnRows] = await connection.query<SchemaColumnRow[]>(
+    selectShareSnapshotColumnNamesSql,
+  );
+  const existingColumnNames = new Set(
+    columnRows.map((row) => row.COLUMN_NAME),
+  );
+
+  if (!existingColumnNames.has("snapshot_hash")) {
+    await connection.query(createAddShareSnapshotHashColumnSql);
+  }
+
+  const [indexRows] = await connection.query<SchemaIndexRow[]>(
+    selectShareSnapshotHashIndexSql,
+  );
+  const hasSnapshotHashIndex = indexRows.some(
+    (row) => row.INDEX_NAME === SHARE_SNAPSHOT_HASH_INDEX_NAME,
+  );
+
+  if (!hasSnapshotHashIndex) {
+    await connection.query(createShareSnapshotHashIndexSql);
+  }
 };
 
 export const checkDatabaseConnection = async (): Promise<void> => {

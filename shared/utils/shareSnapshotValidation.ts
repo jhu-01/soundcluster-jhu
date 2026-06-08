@@ -1,6 +1,7 @@
 import type {
   ClusterShareSnapshot,
   ClusterShareTrack,
+  ShareSnapshotData,
   Vector3Tuple,
 } from "../types/shareSnapshot.js";
 
@@ -57,6 +58,17 @@ export const isClusterShareSnapshot = (
     hasSelectedTrack &&
     isVector3Tuple(value.cameraPosition) &&
     isVector3Tuple(value.cameraTarget) &&
+    Array.isArray(value.tracks) &&
+    value.tracks.every(isShareTrack)
+  );
+};
+
+export const isShareSnapshotData = (
+  value: unknown,
+): value is ShareSnapshotData => {
+  return (
+    isRecord(value) &&
+    value.version === SNAPSHOT_VERSION &&
     Array.isArray(value.tracks) &&
     value.tracks.every(isShareTrack)
   );

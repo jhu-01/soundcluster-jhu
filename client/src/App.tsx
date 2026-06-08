@@ -10,6 +10,10 @@ import {
 
 import type { ItunesTrackMetadata } from "../../shared/types/itunes";
 import type { MusicAnalysisResponse } from "../../shared/types/musicAnalysis";
+import {
+  DEFAULT_SHARE_CAMERA_POSITION,
+  DEFAULT_SHARE_CAMERA_TARGET,
+} from "../../shared/constants/shareSnapshot";
 import { ControlPanel } from "./components/ControlPanel";
 import { ItunesSearchPanel } from "./components/ItunesSearchPanel";
 import { SearchBar } from "./components/SearchBar";
@@ -49,8 +53,8 @@ const createDefaultSnapshot = (): ClusterShareSnapshot => {
   return {
     version: 1,
     selectedTrackId: null,
-    cameraPosition: [6.4, 4.8, 7.6],
-    cameraTarget: [0, 0, 0],
+    cameraPosition: [...DEFAULT_SHARE_CAMERA_POSITION],
+    cameraTarget: [...DEFAULT_SHARE_CAMERA_TARGET],
     tracks: mockTracks,
   };
 };
