@@ -9,3 +9,35 @@
 .shell canvas {
   display: block;
 }
+
+.hud {
+  position: absolute;
+  inset: 16px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(260px, 320px);
+  grid-template-rows: auto auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.hud > * {
+  pointer-events: auto;
+}
+
+.stream {
+  grid-column: 1;
+}
+
+@media (max-width: 760px) {
+  .hud {
+    inset: 12px;
+    grid-template-columns: 1fr;
+  }
+
+  .stream {
+    grid-column: auto;
+  }
+}

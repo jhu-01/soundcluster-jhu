@@ -1,8 +1,4 @@
 .search {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 2;
   display: grid;
   gap: 10px;
   width: min(520px, calc(100vw - 32px));
@@ -109,11 +105,6 @@
 }
 
 @media (max-width: 640px) {
-  .search {
-    top: 12px;
-    left: 12px;
-  }
-
   .row,
   .actions {
     grid-template-columns: 1fr;

@@ -6,7 +6,9 @@ import type { Group } from "three";
 
 import type { AnalyzeStreamVisualFrame } from "../../../shared/types/analyzeStream";
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
+import type { AxisSelection } from "../constants/emotionControls";
 import { useAnalysis } from "../context/AnalysisContext";
+import { projectEmotionVectorsByAxes } from "../utils/axisProjection";
 import { mapEmotionVectorsToScenePointData } from "../utils/mds";
 import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
@@ -18,6 +20,11 @@ interface MockTrack {
   title: string;
   artist: string;
   emotions: EmotionVector;
+}
+
+interface StarsCanvasProps {
+  activeEmotions: EmotionVector;
+  axisSelection: AxisSelection;
 }
 
 const mockTracks: MockTrack[] = [
@@ -100,27 +107,28 @@ const STAR_FIELD_CONFIG = {
   speed: 0.35,
 } as const;
 
-const createSceneTracks = (analysisEmotions: EmotionVector | null): MockTrack[] => {
+const createSceneTracks = (activeEmotions: EmotionVector): MockTrack[] => {
   return mockTracks.map((track, index) => {
-    if (index !== 0 || !analysisEmotions) {
+    if (index !== 0) {
       return track;
     }
 
     return {
       ...track,
-      emotions: analysisEmotions,
+      emotions: activeEmotions,
     };
   });
 };
 
 const createTrackPoints = (
   tracks: MockTrack[],
+  axisSelection: AxisSelection,
   visual: AnalyzeStreamVisualFrame,
   isFinal: boolean,
 ): StarNodeData[] => {
-  const mappedPoints = mapEmotionVectorsToScenePointData(
-    tracks.map((track) => track.emotions),
-  );
+  const vectors = tracks.map((track) => track.emotions);
+  const positions = projectEmotionVectorsByAxes(vectors, axisSelection);
+  const mappedPoints = mapEmotionVectorsToScenePointData(vectors);
 
   return tracks.map((track, index) => {
     const point = mappedPoints[index];
@@ -129,7 +137,7 @@ const createTrackPoints = (
       id: track.id,
       title: track.title,
       artist: track.artist,
-      position: point.position,
+      position: new Vector3(...positions[index]),
       color: isFinal ? point.color : visual.color,
       scale: point.scale,
       intensity: point.intensity * (0.74 + visual.intensity * 0.42),
@@ -137,25 +145,39 @@ const createTrackPoints = (
   });
 };
 
-const baseTrackPoints = mapEmotionVectorsToScenePointData(
-  mockTracks.map((track) => track.emotions),
-);
-const clusterFocusPoint = baseTrackPoints.reduce((focusPoint, point) => {
-  return focusPoint.add(point.position);
-}, new Vector3()).divideScalar(baseTrackPoints.length);
+const createClusterFocusPoint = (
+  tracks: MockTrack[],
+  axisSelection: AxisSelection,
+): Vector3 => {
+  const positions = projectEmotionVectorsByAxes(
+    tracks.map((track) => track.emotions),
+    axisSelection,
+  );
 
-function TrackNodes() {
+  if (positions.length === 0) {
+    return new Vector3();
+  }
+
+  return positions.reduce((focusPoint, position) => {
+    return focusPoint.add(new Vector3(...position));
+  }, new Vector3()).divideScalar(positions.length);
+};
+
+function TrackNodes({
+  activeEmotions,
+  axisSelection,
+}: StarsCanvasProps) {
   const { state } = useAnalysis();
   const groupRef = useRef<Group>(null);
   const [selectedTrack, setSelectedTrack] = useState<StarNodeData | null>(null);
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
   const isFinal = state.status === "done";
   const sceneTracks = useMemo(() => {
-    return createSceneTracks(state.result?.emotions ?? null);
-  }, [state.result]);
+    return createSceneTracks(activeEmotions);
+  }, [activeEmotions]);
   const trackPoints = useMemo(() => {
-    return createTrackPoints(sceneTracks, visual, isFinal);
-  }, [isFinal, sceneTracks, visual]);
+    return createTrackPoints(sceneTracks, axisSelection, visual, isFinal);
+  }, [axisSelection, isFinal, sceneTracks, visual]);
   const activeNodeCount = Math.min(visual.activeNodeCount, trackPoints.length);
 
   useFrame((_, delta) => {
@@ -177,7 +199,17 @@ function TrackNodes() {
   );
 }
 
-export function StarsCanvas() {
+export function StarsCanvas({
+  activeEmotions,
+  axisSelection,
+}: StarsCanvasProps) {
+  const sceneTracks = useMemo(() => {
+    return createSceneTracks(activeEmotions);
+  }, [activeEmotions]);
+  const clusterFocusPoint = useMemo(() => {
+    return createClusterFocusPoint(sceneTracks, axisSelection);
+  }, [axisSelection, sceneTracks]);
+
   return (
     <Canvas camera={CANVAS_CAMERA} dpr={CANVAS_DPR} gl={CANVAS_GL}>
       <color attach="background" args={["#06120f"]} />
@@ -186,7 +218,10 @@ export function StarsCanvas() {
       <pointLight position={[-5, 2, -3]} intensity={1.25} color="#22d3ee" />
       <Stars {...STAR_FIELD_CONFIG} fade />
       <GridBase />
-      <TrackNodes />
+      <TrackNodes
+        activeEmotions={activeEmotions}
+        axisSelection={axisSelection}
+      />
       <ClusterCameraRig focusPoint={clusterFocusPoint} />
       <OrbitControls
         enableDamping
