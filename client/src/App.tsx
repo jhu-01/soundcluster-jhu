@@ -8,6 +8,7 @@ import { TrackHoverCard } from "./components/TrackHoverCard";
 import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
+import { createTrackRelationSummary } from "./utils/trackRelations";
 import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
@@ -95,6 +96,28 @@ export default function App() {
 
     return snapshot.tracks.find((track) => track.id === previewTrackId) ?? null;
   }, [previewTrackId, snapshot.tracks]);
+  const relation = useMemo(() => {
+    return createTrackRelationSummary(snapshot.tracks, snapshot.selectedTrackId);
+  }, [snapshot.selectedTrackId, snapshot.tracks]);
+  const previewRelationLabel = useMemo(() => {
+    if (!previewTrack || !relation) {
+      return null;
+    }
+
+    if (previewTrack.id === relation.selectedTrackId) {
+      return "Selected";
+    }
+
+    if (previewTrack.id === relation.nearestTrackId) {
+      return `Nearest ${relation.nearestDistance.toFixed(3)}`;
+    }
+
+    if (previewTrack.id === relation.farthestTrackId) {
+      return `Farthest ${relation.farthestDistance.toFixed(3)}`;
+    }
+
+    return null;
+  }, [previewTrack, relation]);
   const mutateSnapshot = useCallback(() => {
     const nextSnapshot = createMutatedSnapshot(snapshot);
 
@@ -131,10 +154,11 @@ export default function App() {
         <StarsCanvas
           onPreviewTrack={setPreviewTrackId}
           onSnapshotChange={setSnapshot}
+          relation={relation}
           snapshot={snapshot}
         />
       </Suspense>
-      <TrackHoverCard track={previewTrack} />
+      <TrackHoverCard relationLabel={previewRelationLabel} track={previewTrack} />
       <button
         className={styles.shareButton}
         onClick={() => setIsShareOpen(true)}

@@ -1,4 +1,4 @@
-import { OrbitControls, Stars } from "@react-three/drei";
+import { Line, OrbitControls, Stars } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
   useCallback,
@@ -15,6 +15,7 @@ import type {
   ClusterShareTrack,
   Vector3Tuple,
 } from "../types/shareSnapshot";
+import type { TrackRelationSummary } from "../utils/trackRelations";
 
 interface TrackPoint {
   id: string;
@@ -28,6 +29,12 @@ const CANVAS_GL = { antialias: true, alpha: false };
 const CAMERA_FOV = 48;
 const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 18, 18];
 const SELECTED_NODE_SCALE_MULTIPLIER = 1.34;
+const RELATION_COLORS = {
+  farthest: "#fb7185",
+  nearest: "#5eead4",
+  selected: "#facc15",
+} as const;
+const RELATION_LINE_WIDTH = 2;
 const STAR_FIELD_CONFIG = {
   radius: 64,
   depth: 34,
@@ -50,6 +57,7 @@ const createTrackPoint = (track: ClusterShareTrack): TrackPoint => {
 interface TrackNodesProps {
   onPreviewTrack: (trackId: string | null) => void;
   onSelectTrack: (trackId: string) => void;
+  relation: TrackRelationSummary | null;
   selectedTrackId: string | null;
   tracks: ClusterShareTrack[];
 }
@@ -57,6 +65,7 @@ interface TrackNodesProps {
 function TrackNodes({
   onPreviewTrack,
   onSelectTrack,
+  relation,
   selectedTrackId,
   tracks,
 }: TrackNodesProps) {
@@ -69,9 +78,86 @@ function TrackNodes({
     },
     [onSelectTrack],
   );
+  const relationLines = useMemo(() => {
+    if (!relation) {
+      return [];
+    }
+
+    const selectedPoint = trackPoints.find(
+      (point) => point.id === relation.selectedTrackId,
+    );
+    const nearestPoint = trackPoints.find(
+      (point) => point.id === relation.nearestTrackId,
+    );
+    const farthestPoint = trackPoints.find(
+      (point) => point.id === relation.farthestTrackId,
+    );
+
+    if (!selectedPoint || !nearestPoint || !farthestPoint) {
+      return [];
+    }
+
+    return [
+      {
+        id: "nearest",
+        color: RELATION_COLORS.nearest,
+        points: [selectedPoint.position, nearestPoint.position],
+      },
+      {
+        id: "farthest",
+        color: RELATION_COLORS.farthest,
+        points: [selectedPoint.position, farthestPoint.position],
+      },
+    ];
+  }, [relation, trackPoints]);
+  const getNodeColor = useCallback(
+    (point: TrackPoint): string => {
+      if (point.id === selectedTrackId) {
+        return RELATION_COLORS.selected;
+      }
+
+      if (point.id === relation?.nearestTrackId) {
+        return RELATION_COLORS.nearest;
+      }
+
+      if (point.id === relation?.farthestTrackId) {
+        return RELATION_COLORS.farthest;
+      }
+
+      return point.color;
+    },
+    [relation, selectedTrackId],
+  );
+  const getNodeIntensity = useCallback(
+    (point: TrackPoint): number => {
+      if (point.id === selectedTrackId) {
+        return 2.3;
+      }
+
+      if (
+        point.id === relation?.nearestTrackId ||
+        point.id === relation?.farthestTrackId
+      ) {
+        return 2;
+      }
+
+      return 1.05;
+    },
+    [relation, selectedTrackId],
+  );
 
   return (
     <group>
+      {relationLines.map((line) => (
+        <Line
+          key={line.id}
+          color={line.color}
+          lineWidth={RELATION_LINE_WIDTH}
+          points={line.points}
+          transparent
+          opacity={0.76}
+        />
+      ))}
       {trackPoints.map((point) => (
         <mesh
           key={point.id}
@@ -96,9 +182,9 @@ function TrackNodes({
         >
           <sphereGeometry args={NODE_GEOMETRY_ARGS} />
           <meshStandardMaterial
-            color={point.color}
-            emissive={point.color}
-            emissiveIntensity={point.id === selectedTrackId ? 2 : 1.3}
+            color={getNodeColor(point)}
+            emissive={getNodeColor(point)}
+            emissiveIntensity={getNodeIntensity(point)}
             roughness={0.34}
           />
         </mesh>
@@ -150,12 +236,14 @@ function CameraController({
 interface StarsCanvasProps {
   onPreviewTrack: (trackId: string | null) => void;
   onSnapshotChange: (snapshot: ClusterShareSnapshot) => void;
+  relation: TrackRelationSummary | null;
   snapshot: ClusterShareSnapshot;
 }
 
 export function StarsCanvas({
   onPreviewTrack,
   onSnapshotChange,
+  relation,
   snapshot,
 }: StarsCanvasProps) {
   const cameraSettings = useMemo(() => {
@@ -197,6 +285,7 @@ export function StarsCanvas({
       <TrackNodes
         onPreviewTrack={onPreviewTrack}
         onSelectTrack={updateSelectedTrack}
+        relation={relation}
         selectedTrackId={snapshot.selectedTrackId}
         tracks={snapshot.tracks}
       />
