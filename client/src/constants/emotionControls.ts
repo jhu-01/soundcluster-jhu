@@ -8,7 +8,6 @@ export interface EmotionAxisConfig {
   label: string;
   accentColor: string;
   description: string;
-  mark: string;
 }
 
 export const EMOTION_AXIS_CONFIGS: readonly EmotionAxisConfig[] = [
@@ -17,35 +16,30 @@ export const EMOTION_AXIS_CONFIGS: readonly EmotionAxisConfig[] = [
     label: "Energy",
     accentColor: "#8b6cff",
     description: "Intensity and drive",
-    mark: "En",
   },
   {
     key: "valence",
     label: "Valence",
     accentColor: "#34e5d6",
     description: "Positive to melancholic",
-    mark: "Va",
   },
   {
     key: "tempoDensity",
     label: "Tempo",
     accentColor: "#ffd166",
     description: "Rhythm density",
-    mark: "Te",
   },
   {
     key: "spaceDepth",
     label: "Space",
     accentColor: "#a78bfa",
     description: "Wide to intimate",
-    mark: "Sp",
   },
   {
     key: "tension",
     label: "Tension",
     accentColor: "#ff7795",
     description: "Calm to strained",
-    mark: "Tn",
   },
 ];
 
