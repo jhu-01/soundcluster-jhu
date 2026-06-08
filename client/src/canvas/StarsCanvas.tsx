@@ -22,7 +22,6 @@ import { projectEmotionVectorsByAxes } from "../utils/axisProjection";
 import { mapEmotionVectorsToScenePointData } from "../utils/mds";
 import { selectSnapshotTrack } from "../utils/snapshotSelection";
 import type { TrackRelationSummary } from "../utils/trackRelations";
-import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
 import { StarNodeCollection } from "./StarNodeCollection";
 import type { StarNodeData } from "./StarNode";
@@ -57,6 +56,11 @@ const STAR_FIELD_CONFIG = {
   factor: 4,
   speed: 0.35,
 } as const;
+
+interface BaseTrackPoint extends StarNodeData {
+  baseColor: string;
+  baseIntensity: number;
+}
 
 const createNodeColor = (
   trackId: string,
@@ -97,50 +101,51 @@ const createNodeIntensity = (
   return baseIntensity;
 };
 
-const createTrackPoints = (
+const createBaseTrackPoints = (
   tracks: ClusterShareTrack[],
   axisSelection: AxisSelection,
-  visual: AnalyzeStreamVisualFrame,
-  isFinal: boolean,
-  relation: TrackRelationSummary | null,
-): StarNodeData[] => {
+): BaseTrackPoint[] => {
   const vectors = tracks.map((track) => track.emotions);
   const positions = projectEmotionVectorsByAxes(vectors, axisSelection);
   const mappedPoints = mapEmotionVectorsToScenePointData(vectors);
 
   return tracks.map((track, index) => {
     const point = mappedPoints[index];
-    const baseColor = isFinal ? point.color : visual.color;
-    const baseIntensity = point.intensity * (0.74 + visual.intensity * 0.42);
 
     return {
       id: track.id,
       title: track.title,
       artist: track.artist,
       position: new Vector3(...positions[index]),
-      color: createNodeColor(track.id, baseColor, relation),
+      baseColor: point.color,
+      baseIntensity: point.intensity,
+      color: point.color,
       scale: point.scale,
-      intensity: createNodeIntensity(track.id, baseIntensity, relation),
+      intensity: point.intensity,
     };
   });
 };
 
-const createClusterFocusPoint = (
-  tracks: ClusterShareTrack[],
-  axisSelection: AxisSelection,
-): Vector3 => {
-  const positions = projectEmotionVectorsByAxes(
-    tracks.map((track) => track.emotions),
-    axisSelection,
-  );
+const createTrackPoints = (
+  baseTrackPoints: BaseTrackPoint[],
+  visual: AnalyzeStreamVisualFrame,
+  isFinal: boolean,
+  relation: TrackRelationSummary | null,
+): StarNodeData[] => {
+  return baseTrackPoints.map((point) => {
+    const baseColor = isFinal ? point.baseColor : visual.color;
+    const baseIntensity = point.baseIntensity * (0.74 + visual.intensity * 0.42);
 
-  if (positions.length === 0) {
-    return new Vector3();
-  }
-
-  return positions.reduce((focusPoint, position) => {
-    return focusPoint.add(new Vector3(...position));
-  }, new Vector3()).divideScalar(positions.length);
+    return {
+      id: point.id,
+      title: point.title,
+      artist: point.artist,
+      position: point.position,
+      color: createNodeColor(point.id, baseColor, relation),
+      scale: point.scale,
+      intensity: createNodeIntensity(point.id, baseIntensity, relation),
+    };
+  });
 };
 
 const createRelationLines = (
@@ -200,11 +205,16 @@ function TrackNodes({
   const groupRef = useRef<Group>(null);
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
   const isFinal = state.status === "done";
+  const baseTrackPoints = useMemo(() => {
+    return createBaseTrackPoints(tracks, axisSelection);
+  }, [axisSelection, tracks]);
   const trackPoints = useMemo(() => {
-    return createTrackPoints(tracks, axisSelection, visual, isFinal, relation);
-  }, [axisSelection, isFinal, relation, tracks, visual]);
+    return createTrackPoints(baseTrackPoints, visual, isFinal, relation);
+  }, [baseTrackPoints, isFinal, relation, visual]);
   const activeNodeCount = Math.min(visual.activeNodeCount, trackPoints.length);
-  const visibleTrackPoints = trackPoints.slice(0, activeNodeCount);
+  const visibleTrackPoints = useMemo(() => {
+    return trackPoints.slice(0, activeNodeCount);
+  }, [activeNodeCount, trackPoints]);
   const relationLines = useMemo(() => {
     return createRelationLines(visibleTrackPoints, relation);
   }, [relation, visibleTrackPoints]);
@@ -242,14 +252,12 @@ function TrackNodes({
 interface CameraControllerProps {
   cameraPosition: Vector3Tuple;
   cameraTarget: Vector3Tuple;
-  focusPoint: Vector3;
   onCameraChange: (position: Vector3Tuple, target: Vector3Tuple) => void;
 }
 
 function CameraController({
   cameraPosition,
   cameraTarget,
-  focusPoint,
   onCameraChange,
 }: CameraControllerProps) {
   const controlsRef = useRef<ElementRef<typeof OrbitControls>>(null);
@@ -262,25 +270,22 @@ function CameraController({
   }, [camera, cameraPosition, cameraTarget]);
 
   return (
-    <>
-      <ClusterCameraRig focusPoint={focusPoint} />
-      <OrbitControls
-        ref={controlsRef}
-        enableDamping
-        dampingFactor={0.06}
-        maxDistance={16}
-        maxPolarAngle={Math.PI * 0.48}
-        minDistance={4}
-        onEnd={() => {
-          const target = controlsRef.current?.target;
+    <OrbitControls
+      ref={controlsRef}
+      enableDamping
+      dampingFactor={0.06}
+      maxDistance={16}
+      maxPolarAngle={Math.PI * 0.48}
+      minDistance={4}
+      onEnd={() => {
+        const target = controlsRef.current?.target;
 
-          onCameraChange(
-            [camera.position.x, camera.position.y, camera.position.z],
-            target ? [target.x, target.y, target.z] : cameraTarget,
-          );
-        }}
-      />
-    </>
+        onCameraChange(
+          [camera.position.x, camera.position.y, camera.position.z],
+          target ? [target.x, target.y, target.z] : cameraTarget,
+        );
+      }}
+    />
   );
 }
 
@@ -294,9 +299,6 @@ export function StarsCanvas({
   const cameraSettings = useMemo(() => {
     return { position: snapshot.cameraPosition, fov: CAMERA_FOV };
   }, [snapshot.cameraPosition]);
-  const clusterFocusPoint = useMemo(() => {
-    return createClusterFocusPoint(snapshot.tracks, axisSelection);
-  }, [axisSelection, snapshot.tracks]);
   const updateSelectedTrack = useCallback(
     (selectedTrackId: string) => {
       onSnapshotChange(selectSnapshotTrack(snapshot, selectedTrackId));
@@ -338,7 +340,6 @@ export function StarsCanvas({
       <CameraController
         cameraPosition={snapshot.cameraPosition}
         cameraTarget={snapshot.cameraTarget}
-        focusPoint={clusterFocusPoint}
         onCameraChange={updateCamera}
       />
     </Canvas>
