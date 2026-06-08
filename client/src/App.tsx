@@ -6,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 
 import type { ItunesTrackMetadata } from "../../shared/types/itunes";
@@ -20,6 +21,7 @@ import { SearchBar } from "./components/SearchBar";
 import { ShareModal } from "./components/ShareModal";
 import {
   DEFAULT_AXIS_SELECTION,
+  EMOTION_AXIS_CONFIGS,
   MIN_ACTIVE_AXIS_COUNT,
   type AxisSelection,
   type EmotionAxis,
@@ -83,6 +85,10 @@ const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
 };
 
+const formatEmotionValue = (value: number): string => {
+  return value.toFixed(2);
+};
+
 type ItunesSearchStatus = "idle" | "loading" | "error";
 
 type DebugResponseStatus = "idle" | "loading" | "success" | "error";
@@ -117,6 +123,8 @@ function SoundClusterApp() {
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [selectedEmotionPanelTrackId, setSelectedEmotionPanelTrackId] =
+    useState<string | null>(null);
   const [itunesItems, setItunesItems] = useState<ItunesTrackMetadata[]>([]);
   const [itunesSearchStatus, setItunesSearchStatus] =
     useState<ItunesSearchStatus>("idle");
@@ -151,6 +159,9 @@ function SoundClusterApp() {
       ) ?? null
     );
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
+  const isSelectedEmotionOpen =
+    selectedTrack !== null && selectedEmotionPanelTrackId === selectedTrack.id;
+
   const activeExtractingTrackId =
     lyricsLookupTrackId ?? (state.isActive ? extractingTrackId : null);
   const debugPanelBody = useMemo(() => {
@@ -228,6 +239,7 @@ function SoundClusterApp() {
     });
   }, []);
   const removeSelectedTrack = useCallback((): void => {
+    setSelectedEmotionPanelTrackId(null);
     setSnapshot((currentSnapshot) => {
       const selectedTrackId = currentSnapshot.selectedTrackId;
 
@@ -247,6 +259,7 @@ function SoundClusterApp() {
     appliedAnalysisResultRef.current = null;
     setExtractingTrackId(null);
     setLyricsLookupTrackId(null);
+    setSelectedEmotionPanelTrackId(null);
     setSnapshot((currentSnapshot) => ({
       ...currentSnapshot,
       selectedTrackId: null,
@@ -482,6 +495,34 @@ function SoundClusterApp() {
             <span>{selectedTrack.artist}</span>
           </span>
           <button
+            aria-expanded={isSelectedEmotionOpen}
+            aria-label="Show selected track emotion values"
+            className={styles.selectedTrackInfoButton}
+            onClick={() => {
+              setSelectedEmotionPanelTrackId((currentTrackId) => {
+                return currentTrackId === selectedTrack.id ? null : selectedTrack.id;
+              });
+            }}
+            title="Show emotion values"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="18"
+              viewBox="0 0 24 24"
+              width="18"
+            >
+              <path
+                d="M12 10.5v6.2M12 7.3h.01M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </button>
+          <button
             aria-label="Remove selected track"
             className={styles.selectedTrackRemoveButton}
             onClick={removeSelectedTrack}
@@ -504,6 +545,31 @@ function SoundClusterApp() {
               />
             </svg>
           </button>
+          {isSelectedEmotionOpen ? (
+            <section
+              aria-label="Selected track emotion values"
+              className={styles.selectedTrackEmotionPanel}
+            >
+              {EMOTION_AXIS_CONFIGS.map((axis) => (
+                <span
+                  className={styles.selectedTrackEmotionRow}
+                  key={axis.key}
+                  style={
+                    { "--emotion-color": axis.accentColor } as CSSProperties
+                  }
+                >
+                  <span>{axis.label}</span>
+                  <meter
+                    aria-label={`${axis.label} value`}
+                    max={1}
+                    min={0}
+                    value={selectedTrack.emotions[axis.key]}
+                  />
+                  <strong>{formatEmotionValue(selectedTrack.emotions[axis.key])}</strong>
+                </span>
+              ))}
+            </section>
+          ) : null}
         </aside>
       ) : null}
       {isResetConfirmOpen ? (
