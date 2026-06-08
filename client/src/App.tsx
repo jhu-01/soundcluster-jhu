@@ -26,6 +26,7 @@ import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
 import type { ClusterShareSnapshot } from "./types/shareSnapshot";
 import { applyAnalysisResultToSnapshotTrack } from "./utils/analysisSnapshot";
+import { fetchItunesTracks } from "./utils/itunesSearch";
 import { readShareSnapshotFromLocation } from "./utils/shareSnapshot";
 import { createTrackRelationSummary } from "./utils/trackRelations";
 
@@ -73,8 +74,10 @@ const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
 };
 
+type ItunesSearchStatus = "idle" | "loading" | "error";
+
 function SoundClusterApp() {
-  const { state } = useAnalysis();
+  const { state, startStream } = useAnalysis();
   const analysisTargetTrackIdRef = useRef<string | null>(null);
   const appliedAnalysisResultRef = useRef<MusicAnalysisResponse | null>(null);
   const initialSnapshot = useMemo(() => {
@@ -87,6 +90,13 @@ function SoundClusterApp() {
     DEFAULT_AXIS_SELECTION,
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [itunesItems, setItunesItems] = useState<ItunesTrackMetadata[]>([]);
+  const [itunesSearchStatus, setItunesSearchStatus] =
+    useState<ItunesSearchStatus>("idle");
+  const [itunesSearchMessage, setItunesSearchMessage] = useState(
+    "Search by song title or artist.",
+  );
+  const [extractingTrackId, setExtractingTrackId] = useState<string | null>(null);
   const visibleSnapshot = snapshot;
   const relation = useMemo(() => {
     return createTrackRelationSummary(
@@ -105,13 +115,10 @@ function SoundClusterApp() {
       ) ?? null
     );
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
+  const activeExtractingTrackId = state.isActive ? extractingTrackId : null;
   const ignorePreviewTrack = useCallback((trackId: string | null): void => {
     void trackId;
   }, []);
-  const rememberAnalysisTarget = useCallback((): void => {
-    analysisTargetTrackIdRef.current =
-      snapshot.selectedTrackId ?? snapshot.tracks[0]?.id ?? null;
-  }, [snapshot.selectedTrackId, snapshot.tracks]);
   const toggleAxis = useCallback((axis: EmotionAxis): void => {
     setAxisSelection((previousSelection) => {
       const nextValue = !previousSelection[axis];
@@ -143,6 +150,49 @@ function SoundClusterApp() {
       };
     });
   }, []);
+  const searchItunesTracks = useCallback(async (query: string): Promise<void> => {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+      setItunesSearchStatus("error");
+      setItunesSearchMessage("Search query is required.");
+      return;
+    }
+
+    setItunesSearchStatus("loading");
+    setItunesSearchMessage("Searching iTunes...");
+
+    try {
+      const response = await fetchItunesTracks(trimmedQuery, "");
+
+      setItunesItems(response.items);
+      setItunesSearchStatus("idle");
+      setItunesSearchMessage(
+        response.items.length > 0
+          ? `${response.items.length} tracks found.`
+          : "No tracks found.",
+      );
+    } catch (error: unknown) {
+      setItunesItems([]);
+      setItunesSearchStatus("error");
+      setItunesSearchMessage(
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }, []);
+  const extractItunesTrack = useCallback(
+    (track: ItunesTrackMetadata): void => {
+      analysisTargetTrackIdRef.current = track.itunesTrackId;
+      appliedAnalysisResultRef.current = null;
+      setExtractingTrackId(track.itunesTrackId);
+      bindItunesTrack(track);
+      startStream({
+        title: track.title,
+        artist: track.artist,
+      });
+    },
+    [bindItunesTrack, startStream],
+  );
 
   useEffect(() => {
     if (!state.result || appliedAnalysisResultRef.current === state.result) {
@@ -179,7 +229,11 @@ function SoundClusterApp() {
           <strong>SoundCluster</strong>
           <span>emotion mapped music space</span>
         </div>
-        <SearchBar onAnalyzeStart={rememberAnalysisTarget} />
+        <SearchBar
+          message={itunesSearchMessage}
+          onSearch={searchItunesTracks}
+          status={itunesSearchStatus}
+        />
       </header>
       <div className={styles.rightRail}>
         <ControlPanel
@@ -196,9 +250,12 @@ function SoundClusterApp() {
         <span className={styles.shareHint}>Current view is ready to share.</span>
         <span className={styles.shareCta}>Share</span>
       </button>
-      {import.meta.env.DEV ? (
-        <ItunesSearchPanel onSelectTrack={bindItunesTrack} />
-      ) : null}
+      <ItunesSearchPanel
+        extractingTrackId={activeExtractingTrackId}
+        items={itunesItems}
+        onExtractTrack={extractItunesTrack}
+        status={itunesSearchStatus}
+      />
       {selectedTrack ? (
         <aside className={styles.selectedTrackHud} aria-label="Selected track">
           {selectedTrack.albumImageUrl ? (
