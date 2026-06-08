@@ -18,6 +18,7 @@ interface StarNodeProps {
   index: number;
   isSelected: boolean;
   node: StarNodeData;
+  onPreview: (node: StarNodeData | null) => void;
   onSelect: (node: StarNodeData) => void;
 }
 
@@ -41,6 +42,7 @@ export function StarNode({
   index,
   isSelected,
   node,
+  onPreview,
   onSelect,
 }: StarNodeProps) {
   const groupRef = useRef<Group>(null);
@@ -83,9 +85,18 @@ export function StarNode({
       onClick={(event) => {
         event.stopPropagation();
         onSelect(node);
+        onPreview(node);
       }}
-      onPointerOut={() => setIsHovered(false)}
-      onPointerOver={() => setIsHovered(true)}
+      onPointerOut={(event) => {
+        event.stopPropagation();
+        setIsHovered(false);
+        onPreview(null);
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        setIsHovered(true);
+        onPreview(node);
+      }}
     >
       <mesh ref={meshRef} scale={node.scale}>
         <sphereGeometry args={[1, 32, 32]} />

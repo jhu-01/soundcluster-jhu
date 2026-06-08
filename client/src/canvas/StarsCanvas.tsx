@@ -27,6 +27,7 @@ import type { StarNodeData } from "./StarNode";
 
 interface StarsCanvasProps {
   axisSelection: AxisSelection;
+  onPreviewTrack: (trackId: string | null) => void;
   onSnapshotChange: (snapshot: ClusterShareSnapshot) => void;
   snapshot: ClusterShareSnapshot;
 }
@@ -93,6 +94,7 @@ const createClusterFocusPoint = (
 
 interface TrackNodesProps {
   axisSelection: AxisSelection;
+  onPreviewTrack: (trackId: string | null) => void;
   onSelectTrack: (trackId: string) => void;
   selectedTrackId: string | null;
   tracks: ClusterShareTrack[];
@@ -100,6 +102,7 @@ interface TrackNodesProps {
 
 function TrackNodes({
   axisSelection,
+  onPreviewTrack,
   onSelectTrack,
   selectedTrackId,
   tracks,
@@ -125,6 +128,7 @@ function TrackNodes({
     <group ref={groupRef}>
       <StarNodeCollection
         nodes={trackPoints.slice(0, activeNodeCount)}
+        onPreviewNode={(node) => onPreviewTrack(node?.id ?? null)}
         onSelectNode={(node) => onSelectTrack(node.id)}
         selectedNodeId={selectedTrackId}
       />
@@ -179,6 +183,7 @@ function CameraController({
 
 export function StarsCanvas({
   axisSelection,
+  onPreviewTrack,
   onSnapshotChange,
   snapshot,
 }: StarsCanvasProps) {
@@ -209,7 +214,12 @@ export function StarsCanvas({
   );
 
   return (
-    <Canvas camera={cameraSettings} dpr={CANVAS_DPR} gl={CANVAS_GL}>
+    <Canvas
+      camera={cameraSettings}
+      dpr={CANVAS_DPR}
+      gl={CANVAS_GL}
+      onPointerMissed={() => onPreviewTrack(null)}
+    >
       <color attach="background" args={["#06120f"]} />
       <ambientLight intensity={0.54} />
       <directionalLight position={[6, 8, 5]} intensity={1.35} />
@@ -218,6 +228,7 @@ export function StarsCanvas({
       <GridBase />
       <TrackNodes
         axisSelection={axisSelection}
+        onPreviewTrack={onPreviewTrack}
         onSelectTrack={updateSelectedTrack}
         selectedTrackId={snapshot.selectedTrackId}
         tracks={snapshot.tracks}

@@ -16,6 +16,7 @@ import { SearchBar } from "./components/SearchBar";
 import { ShareModal } from "./components/ShareModal";
 import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
 import { StreamingLogViewer } from "./components/StreamingLogViewer";
+import { TrackHoverCard } from "./components/TrackHoverCard";
 import {
   DEFAULT_AXIS_SELECTION,
   DEFAULT_EMOTION_VECTOR,
@@ -60,15 +61,22 @@ const clampUnitValue = (value: number): number => {
   return Math.max(0, Math.min(1, value));
 };
 
+const findTrackById = (
+  tracks: ClusterShareTrack[],
+  trackId: string | null,
+): ClusterShareTrack | null => {
+  if (!trackId) {
+    return null;
+  }
+
+  return tracks.find((track) => track.id === trackId) ?? null;
+};
+
 const findSelectedTrack = (
   tracks: ClusterShareTrack[],
   selectedTrackId: string | null,
 ): ClusterShareTrack | null => {
-  if (!selectedTrackId) {
-    return tracks[0] ?? null;
-  }
-
-  return tracks.find((track) => track.id === selectedTrackId) ?? tracks[0] ?? null;
+  return findTrackById(tracks, selectedTrackId) ?? tracks[0] ?? null;
 };
 
 const createMutatedSnapshot = (
@@ -155,9 +163,13 @@ function SoundClusterApp() {
     DEFAULT_AXIS_SELECTION,
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [previewTrackId, setPreviewTrackId] = useState<string | null>(null);
   const selectedTrack = useMemo(() => {
     return findSelectedTrack(snapshot.tracks, snapshot.selectedTrackId);
   }, [snapshot.selectedTrackId, snapshot.tracks]);
+  const previewTrack = useMemo(() => {
+    return findTrackById(snapshot.tracks, previewTrackId);
+  }, [previewTrackId, snapshot.tracks]);
   const activeEmotions = selectedTrack?.emotions ?? DEFAULT_EMOTION_VECTOR;
   const isCacheHit = useMemo(() => {
     return state.events.some((event) => event.message === ANALYZE_CACHE_HIT_MESSAGE);
@@ -221,10 +233,12 @@ function SoundClusterApp() {
       >
         <StarsCanvas
           axisSelection={axisSelection}
+          onPreviewTrack={setPreviewTrackId}
           onSnapshotChange={setSnapshot}
           snapshot={snapshot}
         />
       </Suspense>
+      <TrackHoverCard track={previewTrack} />
       <div className={styles.hud}>
         <SearchBar />
         <ControlPanel

@@ -1,0 +1,77 @@
+.card {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: 12;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  width: min(340px, calc(100vw - 36px));
+  min-height: 92px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(94, 234, 212, 0.34);
+  border-radius: 8px;
+  color: #e6fffb;
+  background: rgba(6, 18, 15, 0.88);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
+  pointer-events: none;
+}
+
+.albumImage,
+.albumFallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 7px;
+}
+
+.albumImage {
+  object-fit: cover;
+}
+
+.albumFallback {
+  display: grid;
+  place-items: center;
+  color: #05201d;
+  background: #5eead4;
+  font-weight: 900;
+}
+
+.metadata {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.metadata strong,
+.metadata span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metadata strong {
+  font-size: 16px;
+}
+
+.metadata span {
+  color: #a8c7c2;
+  font-size: 13px;
+}
+
+@media (max-width: 620px) {
+  .card {
+    top: 12px;
+    right: 12px;
+    grid-template-columns: 58px minmax(0, 1fr);
+    width: min(300px, calc(100vw - 24px));
+    min-height: 76px;
+    padding: 8px;
+  }
+
+  .albumImage,
+  .albumFallback {
+    width: 58px;
+    height: 58px;
+  }
+}
