@@ -47,6 +47,19 @@ const resolveErrorMessage = (error: unknown): string => {
 
 export const app = express();
 
+app.use((_request, response, next) => {
+  response.header("Access-Control-Allow-Origin", "*");
+  response.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  response.header("Access-Control-Allow-Headers", "Content-Type");
+
+  if (_request.method === "OPTIONS") {
+    response.sendStatus(204);
+    return;
+  }
+
+  next();
+});
+
 app.use(ANALYZE_ROUTE_PREFIX, analyzeRouter);
 app.use(ITUNES_ROUTE_PREFIX, itunesRouter);
 
