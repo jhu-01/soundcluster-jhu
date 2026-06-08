@@ -1,9 +1,17 @@
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { AdditiveBlending, CanvasTexture, Color, Vector3 } from "three";
 import type { Group, MeshStandardMaterial, SpriteMaterial } from "three";
 
+import type { EmotionVector } from "../../../shared/types/musicAnalysis";
+import { EMOTION_AXIS_CONFIGS } from "../constants/emotionControls";
 import styles from "./StarNode.module.css";
 
 export interface StarNodeData {
@@ -15,6 +23,7 @@ export interface StarNodeData {
   color: string;
   scale: number;
   intensity: number;
+  emotions: EmotionVector;
 }
 
 export type StarNodeRelationRole = "selected" | "nearest" | "farthest";
@@ -41,6 +50,10 @@ const GLOW_TEXTURE_SIZE = 128;
 const SELECTED_SCALE_MULTIPLIER = 3;
 const RELATED_SCALE_MULTIPLIER = 2;
 const HOVER_SCALE_MULTIPLIER = 1.16;
+
+const formatEmotionValue = (value: number): string => {
+  return value.toFixed(2);
+};
 
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
@@ -118,6 +131,8 @@ export function StarNode({
   const coreMaterialRef = useRef<MeshStandardMaterial>(null);
   const glowMaterialRef = useRef<SpriteMaterial>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isPopupHovered, setIsPopupHovered] = useState(false);
+  const [isEmotionPanelOpen, setIsEmotionPanelOpen] = useState(false);
   const targetPosition = useMemo(() => node.position.clone(), [node.position]);
   const entryPosition = useMemo(() => createEntryPosition(index), [index]);
   const baseColor = useMemo(() => new Color(node.color), [node.color]);
@@ -125,7 +140,10 @@ export function StarNode({
   const glowTexture = useMemo(() => createGlowTexture(node.color), [node.color]);
   const isPointPopupPinned = shouldPinPointPopup(relationRole);
   const shouldShowPointPopup =
-    isPointPopupPinned || (isHovered && relationRole !== "selected");
+    isPointPopupPinned ||
+    isPopupHovered ||
+    isEmotionPanelOpen ||
+    (isHovered && relationRole !== "selected");
 
   useEffect(() => {
     return () => glowTexture.dispose();
@@ -209,6 +227,13 @@ export function StarNode({
             className={styles.popup}
             data-role={isPointPopupPinned ? relationRole : "hover"}
             aria-label="Track hover details"
+            onPointerEnter={() => setIsPopupHovered(true)}
+            onPointerLeave={() => {
+              setIsPopupHovered(false);
+              if (!isPointPopupPinned) {
+                setIsEmotionPanelOpen(false);
+              }
+            }}
           >
             {node.albumImageUrl ? (
               <img
@@ -225,6 +250,44 @@ export function StarNode({
               <strong>{node.title}</strong>
               <small>{node.artist}</small>
             </span>
+            <button
+              aria-expanded={isEmotionPanelOpen}
+              aria-label="Show emotion values"
+              className={styles.infoButton}
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsEmotionPanelOpen((currentValue) => !currentValue);
+              }}
+              type="button"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 10.5v6.2" />
+                <path d="M12 7.3h.01" />
+                <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+              </svg>
+            </button>
+            {isEmotionPanelOpen ? (
+              <section className={styles.emotionPanel} aria-label="Emotion values">
+                {EMOTION_AXIS_CONFIGS.map((axis) => (
+                  <span
+                    className={styles.emotionRow}
+                    key={axis.key}
+                    style={
+                      { "--emotion-color": axis.accentColor } as CSSProperties
+                    }
+                  >
+                    <span>{axis.label}</span>
+                    <meter
+                      aria-label={`${axis.label} value`}
+                      max={1}
+                      min={0}
+                      value={node.emotions[axis.key]}
+                    />
+                    <strong>{formatEmotionValue(node.emotions[axis.key])}</strong>
+                  </span>
+                ))}
+              </section>
+            ) : null}
           </aside>
         </Html>
       ) : null}
