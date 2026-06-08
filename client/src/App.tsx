@@ -28,7 +28,11 @@ import type { ClusterShareSnapshot } from "./types/shareSnapshot";
 import { applyAnalysisResultToSnapshotTrack } from "./utils/analysisSnapshot";
 import { fetchItunesTracks } from "./utils/itunesSearch";
 import { fetchLyrics } from "./utils/lyricsSearch";
-import { readShareSnapshotFromLocation } from "./utils/shareSnapshot";
+import { readShareSnapshot } from "./utils/shareSnapshotApi";
+import {
+  readShareIdFromLocation,
+  readShareSnapshotFromLocation,
+} from "./utils/shareSnapshot";
 import { createTrackRelationSummary } from "./utils/trackRelations";
 
 const StarsCanvas = lazy(() =>
@@ -95,8 +99,14 @@ function SoundClusterApp() {
   const initialSnapshot = useMemo(() => {
     return readShareSnapshotFromLocation(window.location.search);
   }, []);
+  const initialShareId = useMemo(() => {
+    return readShareIdFromLocation(window.location.search);
+  }, []);
   const [snapshot, setSnapshot] = useState<ClusterShareSnapshot>(
     initialSnapshot ?? createDefaultSnapshot(),
+  );
+  const [shareLoadMessage, setShareLoadMessage] = useState<string | null>(
+    initialShareId ? "Loading shared cluster..." : null,
   );
   const [axisSelection, setAxisSelection] = useState<AxisSelection>(
     DEFAULT_AXIS_SELECTION,
@@ -336,6 +346,37 @@ function SoundClusterApp() {
   );
 
   useEffect(() => {
+    if (!initialShareId) {
+      return;
+    }
+
+    let isMounted = true;
+
+    readShareSnapshot(initialShareId)
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setSnapshot(response.snapshot);
+        setShareLoadMessage(null);
+      })
+      .catch((error: unknown) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        setShareLoadMessage(errorMessage);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialShareId]);
+
+  useEffect(() => {
     if (!state.result || appliedAnalysisResultRef.current === state.result) {
       return;
     }
@@ -384,6 +425,9 @@ function SoundClusterApp() {
           Reset
         </button>
       </header>
+      {shareLoadMessage ? (
+        <aside className={styles.shareLoadStatus}>{shareLoadMessage}</aside>
+      ) : null}
       <div className={styles.rightRail}>
         <ControlPanel
           axisSelection={axisSelection}

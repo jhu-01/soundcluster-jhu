@@ -13,6 +13,7 @@ import {
   createAddAnalysisCacheEmotionColumnSql,
   createAnalysisCacheEmotionIndexSql,
   createAnalysisCacheTableSql,
+  createShareSnapshotTableSql,
   selectAnalysisCacheColumnNamesSql,
   selectAnalysisCacheEmotionIndexSql,
 } from "../database/schema.js";
@@ -71,12 +72,19 @@ const ensureAnalysisCacheSchema = async (
   }
 };
 
+const ensureShareSnapshotSchema = async (
+  connection: mysql.PoolConnection,
+): Promise<void> => {
+  await connection.query(createShareSnapshotTableSql);
+};
+
 export const checkDatabaseConnection = async (): Promise<void> => {
   const connection = await databasePool.getConnection();
 
   try {
     await connection.ping();
     await ensureAnalysisCacheSchema(connection);
+    await ensureShareSnapshotSchema(connection);
     console.log(DATABASE_CONNECTED_MESSAGE);
   } finally {
     connection.release();

@@ -1,7 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { ClusterShareSnapshot } from "../types/shareSnapshot";
-import { createShareSnapshotUrl } from "../utils/shareSnapshot";
+import { createShareSnapshot } from "../utils/shareSnapshotApi";
+import {
+  createShortShareSnapshotUrl,
+  encodeShareSnapshot,
+} from "../utils/shareSnapshot";
 import styles from "./ShareModal.module.css";
 
 interface ShareModalProps {
@@ -11,18 +15,74 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ isOpen, snapshot, onClose }: ShareModalProps) {
-  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
-  const shareUrl = useMemo(() => {
-    return createShareSnapshotUrl(snapshot, window.location.href);
-  }, [snapshot]);
+  const [copiedUrl, setCopiedUrl] = useState("");
+  const [shareResult, setShareResult] = useState({
+    errorMessage: "",
+    requestKey: "",
+    url: "",
+  });
+  const requestKey = useMemo(() => {
+    return isOpen ? encodeShareSnapshot(snapshot) : "";
+  }, [isOpen, snapshot]);
+  const hasCurrentResult = shareResult.requestKey === requestKey;
+  const shareUrl = hasCurrentResult ? shareResult.url : "";
+  const shareErrorMessage = hasCurrentResult ? shareResult.errorMessage : "";
+  const shareStatus = shareErrorMessage ? "error" : shareUrl ? "ready" : "loading";
+  const shareMessage =
+    shareStatus === "ready"
+      ? "Short share link is ready."
+      : shareErrorMessage || "Creating short share link...";
+  const copyStatus = copiedUrl === shareUrl ? "copied" : "idle";
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    let isMounted = true;
+
+    createShareSnapshot(snapshot)
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setShareResult({
+          errorMessage: "",
+          requestKey,
+          url: createShortShareSnapshotUrl(response.shareId, window.location.href),
+        });
+      })
+      .catch((error: unknown) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        setShareResult({
+          errorMessage,
+          requestKey,
+          url: "",
+        });
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, requestKey, snapshot]);
 
   if (!isOpen) {
     return null;
   }
 
   const handleCopy = async () => {
+    if (!shareUrl) {
+      return;
+    }
+
     await navigator.clipboard.writeText(shareUrl);
-    setCopyStatus("copied");
+    setCopiedUrl(shareUrl);
   };
 
   return (
@@ -40,8 +100,20 @@ export function ShareModal({ isOpen, snapshot, onClose }: ShareModalProps) {
           </button>
         </div>
         <p className={styles.description}>Your current cluster state is ready to share.</p>
-        <input className={styles.urlInput} readOnly value={shareUrl} />
-        <button className={styles.copyButton} onClick={handleCopy} type="button">
+        <input
+          className={styles.urlInput}
+          readOnly
+          value={shareUrl || shareMessage}
+        />
+        <span className={styles.status} data-status={shareStatus}>
+          {shareMessage}
+        </span>
+        <button
+          className={styles.copyButton}
+          disabled={!shareUrl || shareStatus !== "ready"}
+          onClick={handleCopy}
+          type="button"
+        >
           {copyStatus === "copied" ? "Copied" : "Copy Link"}
         </button>
       </section>

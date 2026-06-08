@@ -1,4 +1,7 @@
-import { ANALYSIS_CACHE_TABLE_NAME } from "../../../shared/constants/database.js";
+import {
+  ANALYSIS_CACHE_TABLE_NAME,
+  SHARE_SNAPSHOT_TABLE_NAME,
+} from "../../../shared/constants/database.js";
 
 export const analysisCacheEmotionColumns = [
   { name: "energy", jsonPath: "$.emotions.energy" },
@@ -31,6 +34,15 @@ export const createAnalysisCacheTableSql = `
       space_depth,
       tension
     )
+  )
+`;
+
+export const createShareSnapshotTableSql = `
+  CREATE TABLE IF NOT EXISTS ${SHARE_SNAPSHOT_TABLE_NAME} (
+    share_id VARCHAR(32) PRIMARY KEY,
+    snapshot_json JSON NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )
 `;
 

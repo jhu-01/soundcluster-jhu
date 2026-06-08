@@ -18,3 +18,4 @@ export const DATABASE_DEFAULT_CONFIG = {
 
 export const DATABASE_CONNECTED_MESSAGE = "Database Connected!";
 export const ANALYSIS_CACHE_TABLE_NAME = "analysis_cache";
+export const SHARE_SNAPSHOT_TABLE_NAME = "share_snapshots";

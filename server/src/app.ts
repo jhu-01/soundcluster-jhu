@@ -6,6 +6,7 @@ import { generateGeminiText, generateMusicAnalysis } from "./config/gemini.js";
 import { analyzeRouter } from "./routes/analyze.js";
 import { itunesRouter } from "./routes/itunes.js";
 import { lyricsRouter } from "./routes/lyrics.js";
+import { shareSnapshotRouter } from "./routes/shareSnapshot.js";
 import {
   GEMINI_ANALYSIS_LOG_PREFIX,
   GEMINI_ANALYSIS_TEST_ROUTE,
@@ -17,6 +18,7 @@ import {
 import { ANALYZE_ROUTE_PREFIX } from "../../shared/constants/analyzeStream.js";
 import { ITUNES_ROUTE_PREFIX } from "../../shared/constants/itunes.js";
 import { LYRICS_ROUTE_PREFIX } from "../../shared/constants/lyrics.js";
+import { SHARE_SNAPSHOT_ROUTE_PREFIX } from "../../shared/constants/shareSnapshot.js";
 import {
   SERVER_DEFAULT_PORT,
   SERVER_HEALTH_RESPONSE,
@@ -62,9 +64,12 @@ app.use((_request, response, next) => {
   next();
 });
 
+app.use(express.json({ limit: "256kb" }));
+
 app.use(ANALYZE_ROUTE_PREFIX, analyzeRouter);
 app.use(ITUNES_ROUTE_PREFIX, itunesRouter);
 app.use(LYRICS_ROUTE_PREFIX, lyricsRouter);
+app.use(SHARE_SNAPSHOT_ROUTE_PREFIX, shareSnapshotRouter);
 
 app.get(SERVER_HEALTH_ROUTE, (_request, response) => {
   response.json(SERVER_HEALTH_RESPONSE);

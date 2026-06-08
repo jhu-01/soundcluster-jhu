@@ -61,6 +61,23 @@
   background: rgba(2, 4, 10, 0.72);
 }
 
+.status {
+  display: block;
+  min-height: 18px;
+  margin-top: 8px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status[data-status="ready"] {
+  color: var(--color-accent-cyan);
+}
+
+.status[data-status="error"] {
+  color: var(--color-danger);
+}
+
 .copyButton {
   width: 100%;
   margin-top: 12px;
@@ -71,4 +88,9 @@
   background: linear-gradient(90deg, var(--color-accent-cyan), var(--color-accent-yellow));
   font-weight: 800;
   cursor: pointer;
+}
+
+.copyButton:disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
 }

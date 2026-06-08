@@ -180,6 +180,25 @@
   cursor: pointer;
 }
 
+.shareLoadStatus {
+  position: fixed;
+  top: 86px;
+  left: 50%;
+  z-index: 10;
+  width: min(360px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid rgba(173, 190, 220, 0.14);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+  text-align: center;
+  background: rgba(9, 14, 24, 0.72);
+  box-shadow: var(--panel-top-highlight), 0 14px 34px rgba(0, 0, 0, 0.26);
+  transform: translateX(-50%);
+  backdrop-filter: blur(16px);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .shareTitle {
   font-size: 16px;
 }

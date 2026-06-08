@@ -3,6 +3,11 @@ import type {
   ClusterShareTrack,
   Vector3Tuple,
 } from "../types/shareSnapshot.js";
+import { SHARE_SNAPSHOT_QUERY_PARAM } from "../../../shared/constants/shareSnapshot.js";
+import {
+  isClusterShareSnapshot,
+  isVector3Tuple,
+} from "../../../shared/utils/shareSnapshotValidation.js";
 
 const SNAPSHOT_QUERY_PARAM = "snapshot";
 const SNAPSHOT_VERSION = 1;
@@ -28,62 +33,6 @@ type CompactShareSnapshot = [
   Vector3Tuple,
   CompactShareTrack[],
 ];
-
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null;
-};
-
-const isVector3Tuple = (value: unknown): value is Vector3Tuple => {
-  return (
-    Array.isArray(value) &&
-    value.length === 3 &&
-    value.every((item) => typeof item === "number" && Number.isFinite(item))
-  );
-};
-
-const isShareTrack = (value: unknown): value is ClusterShareTrack => {
-  if (!isRecord(value) || !isRecord(value.emotions)) {
-    return false;
-  }
-
-  const emotions = value.emotions;
-
-  return (
-    (value.albumImageUrl === undefined ||
-      value.albumImageUrl === null ||
-      typeof value.albumImageUrl === "string") &&
-    typeof value.id === "string" &&
-    typeof value.title === "string" &&
-    typeof value.artist === "string" &&
-    (value.itunesTrackId === undefined ||
-      typeof value.itunesTrackId === "string") &&
-    (value.itunesUrl === undefined || typeof value.itunesUrl === "string") &&
-    typeof emotions.energy === "number" &&
-    typeof emotions.valence === "number" &&
-    typeof emotions.tempoDensity === "number" &&
-    typeof emotions.spaceDepth === "number" &&
-    typeof emotions.tension === "number"
-  );
-};
-
-const isClusterShareSnapshot = (
-  value: unknown,
-): value is ClusterShareSnapshot => {
-  if (!isRecord(value) || value.version !== SNAPSHOT_VERSION) {
-    return false;
-  }
-
-  const hasSelectedTrack =
-    value.selectedTrackId === null || typeof value.selectedTrackId === "string";
-
-  return (
-    hasSelectedTrack &&
-    isVector3Tuple(value.cameraPosition) &&
-    isVector3Tuple(value.cameraTarget) &&
-    Array.isArray(value.tracks) &&
-    value.tracks.every(isShareTrack)
-  );
-};
 
 const encodeJsonToBase64Url = (json: string): string => {
   return btoa(encodeURIComponent(json))
@@ -328,6 +277,24 @@ export const createShareSnapshotUrl = (
   url.searchParams.set(SNAPSHOT_QUERY_PARAM, encodeShareSnapshot(snapshot));
 
   return url.toString();
+};
+
+export const createShortShareSnapshotUrl = (
+  shareId: string,
+  href: string,
+): string => {
+  const url = new URL(href);
+
+  url.searchParams.delete(SNAPSHOT_QUERY_PARAM);
+  url.searchParams.set(SHARE_SNAPSHOT_QUERY_PARAM, shareId);
+
+  return url.toString();
+};
+
+export const readShareIdFromLocation = (search: string): string | null => {
+  const shareId = new URLSearchParams(search).get(SHARE_SNAPSHOT_QUERY_PARAM);
+
+  return shareId?.trim() ? shareId : null;
 };
 
 export const readShareSnapshotFromLocation = (

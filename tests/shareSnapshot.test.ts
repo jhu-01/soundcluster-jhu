@@ -4,9 +4,11 @@ import { describe, it } from "node:test";
 import type { ClusterShareSnapshot } from "../client/src/types/shareSnapshot.js";
 import {
   createShareSnapshotUrl,
+  createShortShareSnapshotUrl,
   decodeShareSnapshot,
   encodeLegacyShareSnapshot,
   encodeShareSnapshot,
+  readShareIdFromLocation,
   readShareSnapshotFromLocation,
 } from "../client/src/utils/shareSnapshot.js";
 
@@ -80,6 +82,18 @@ describe("share snapshot encoding", () => {
       spaceDepth: 0.751,
       tension: 0.554,
     });
+  });
+
+  it("creates short share id URLs without carrying encoded snapshot payloads", () => {
+    const url = createShortShareSnapshotUrl(
+      "AbCd123xYz",
+      "http://127.0.0.1:5173/?snapshot=c1.long-value&view=cluster",
+    );
+    const parsedUrl = new URL(url);
+
+    assert.equal(parsedUrl.searchParams.get("share"), "AbCd123xYz");
+    assert.equal(parsedUrl.searchParams.has("snapshot"), false);
+    assert.equal(readShareIdFromLocation(parsedUrl.search), "AbCd123xYz");
   });
 
   it("keeps legacy base64 JSON snapshots readable", () => {
