@@ -32,6 +32,7 @@ import type {
   ClusterShareSnapshot,
   ClusterShareTrack,
 } from "./types/shareSnapshot";
+import { findSnapshotTrack } from "./utils/snapshotSelection";
 import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
@@ -169,7 +170,11 @@ function SoundClusterApp() {
     return findSelectedTrack(snapshot.tracks, snapshot.selectedTrackId);
   }, [snapshot.selectedTrackId, snapshot.tracks]);
   const previewTrack = useMemo(() => {
-    return findTrackById(snapshot.tracks, previewTrackId);
+    if (!previewTrackId) {
+      return null;
+    }
+
+    return findSnapshotTrack(snapshot.tracks, previewTrackId);
   }, [previewTrackId, snapshot.tracks]);
   const relation = useMemo(() => {
     return createTrackRelationSummary(snapshot.tracks, snapshot.selectedTrackId);

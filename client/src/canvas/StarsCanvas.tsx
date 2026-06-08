@@ -20,6 +20,7 @@ import type {
 } from "../types/shareSnapshot";
 import { projectEmotionVectorsByAxes } from "../utils/axisProjection";
 import { mapEmotionVectorsToScenePointData } from "../utils/mds";
+import { selectSnapshotTrack } from "../utils/snapshotSelection";
 import type { TrackRelationSummary } from "../utils/trackRelations";
 import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
@@ -298,10 +299,7 @@ export function StarsCanvas({
   }, [axisSelection, snapshot.tracks]);
   const updateSelectedTrack = useCallback(
     (selectedTrackId: string) => {
-      onSnapshotChange({
-        ...snapshot,
-        selectedTrackId,
-      });
+      onSnapshotChange(selectSnapshotTrack(snapshot, selectedTrackId));
     },
     [onSnapshotChange, snapshot],
   );
