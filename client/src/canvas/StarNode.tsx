@@ -1,7 +1,7 @@
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
-import { AdditiveBlending, Color, Vector3 } from "three";
+import { Color, Vector3 } from "three";
 import type { Group, Mesh, MeshStandardMaterial } from "three";
 
 import styles from "./StarNode.module.css";
@@ -31,8 +31,7 @@ const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
 const NEON_HOVER_COLOR = "#67e8f9";
 const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 12, 12];
-const NODE_CORE_SCALE = 0.5;
-const NODE_GLOW_SCALE = 1.28;
+const NODE_MARKER_SCALE = 0.92;
 
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
@@ -74,7 +73,7 @@ export function StarNode({
     const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
     const hoverEasing = 1 - Math.exp(-NODE_HOVER_SPEED * delta);
     const isHighlighted = isHovered || isSelected;
-    const targetScale = node.scale * NODE_CORE_SCALE * (isHighlighted ? 1.55 : 1);
+    const targetScale = node.scale * NODE_MARKER_SCALE * (isHighlighted ? 1.28 : 1);
     const nextScale = mesh.scale.x + (targetScale - mesh.scale.x) * hoverEasing;
 
     group.position.lerp(targetPosition, settleEasing);
@@ -106,17 +105,7 @@ export function StarNode({
         onPreview(node);
       }}
     >
-      <mesh scale={node.scale * NODE_GLOW_SCALE}>
-        <sphereGeometry args={NODE_GEOMETRY_ARGS} />
-        <meshBasicMaterial
-          blending={AdditiveBlending}
-          color={node.color}
-          depthWrite={false}
-          opacity={0.26}
-          transparent
-        />
-      </mesh>
-      <mesh ref={meshRef} scale={node.scale * NODE_CORE_SCALE}>
+      <mesh ref={meshRef} scale={node.scale * NODE_MARKER_SCALE}>
         <sphereGeometry args={NODE_GEOMETRY_ARGS} />
         <meshStandardMaterial
           ref={materialRef}
@@ -128,7 +117,7 @@ export function StarNode({
         />
       </mesh>
       {isHovered ? (
-        <Html center distanceFactor={8} position={[0, 0.48, 0]} zIndexRange={[24, 0]}>
+        <Html center distanceFactor={7} position={[0, 0.66, 0]} zIndexRange={[24, 0]}>
           <aside className={styles.popup} aria-label="Track hover details">
             {node.albumImageUrl ? (
               <img

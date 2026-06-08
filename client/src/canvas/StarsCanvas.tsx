@@ -1,4 +1,4 @@
-import { Line, OrbitControls, Stars } from "@react-three/drei";
+import { Line, OrbitControls } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
   useCallback,
@@ -22,6 +22,7 @@ import { mapEmotionVectorsToScenePointData } from "../utils/mds";
 import { selectSnapshotTrack } from "../utils/snapshotSelection";
 import type { TrackRelationSummary } from "../utils/trackRelations";
 import { GridBase } from "./GridBase";
+import { StarField } from "./StarField";
 import { StarNodeCollection } from "./StarNodeCollection";
 import type { StarNodeData } from "./StarNode";
 
@@ -51,22 +52,8 @@ const RELATION_COLORS = {
   selected: "#facc15",
 } as const;
 const RELATION_LINE_WIDTH = 2;
-const STAR_FIELD_CONFIG = {
-  radius: 76,
-  depth: 46,
-  count: 1100,
-  factor: 4.8,
-  saturation: 0,
-  speed: 0,
-} as const;
-const BRIGHT_STAR_FIELD_CONFIG = {
-  radius: 58,
-  depth: 28,
-  count: 90,
-  factor: 8,
-  saturation: 0.35,
-  speed: 0,
-} as const;
+const STAR_FIELD_COUNT = 1250;
+const STAR_FIELD_RADIUS = 78;
 
 interface BaseTrackPoint extends StarNodeData {
   baseColor: string;
@@ -338,8 +325,7 @@ export function StarsCanvas({
       <directionalLight position={[6, 8, 5]} intensity={1.15} />
       <pointLight position={[-5, 2, -3]} intensity={1.28} color="#34e5d6" />
       <pointLight position={[5, 4, 5]} intensity={0.7} color="#7c4dff" />
-      <Stars {...STAR_FIELD_CONFIG} fade />
-      <Stars {...BRIGHT_STAR_FIELD_CONFIG} />
+      <StarField count={STAR_FIELD_COUNT} radius={STAR_FIELD_RADIUS} />
       <GridBase />
       <TrackNodes
         axisSelection={axisSelection}

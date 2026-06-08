@@ -1,10 +1,10 @@
 .popup {
   display: grid;
-  grid-template-columns: 42px minmax(0, 132px);
-  gap: 9px;
+  grid-template-columns: 62px minmax(0, 188px);
+  gap: 12px;
   align-items: center;
-  min-width: 190px;
-  padding: 8px;
+  min-width: 280px;
+  padding: 11px;
   border: 1px solid rgba(173, 190, 220, 0.18);
   border-radius: 12px;
   color: var(--color-text-primary);
@@ -14,17 +14,17 @@
     0 12px 28px rgba(0, 0, 0, 0.36),
     0 0 24px rgba(124, 77, 255, 0.2);
   pointer-events: none;
-  transform: translateY(-62%);
+  transform: translateY(-66%);
   backdrop-filter: blur(16px);
 }
 
 .albumImage,
 .albumFallback {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 62px;
+  height: 62px;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 11px;
 }
 
 .albumImage {
@@ -34,14 +34,14 @@
 .albumFallback {
   color: var(--color-bg);
   background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-cyan));
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 900;
 }
 
 .metadata {
   display: grid;
   min-width: 0;
-  gap: 3px;
+  gap: 5px;
 }
 
 .metadata strong,
@@ -52,12 +52,12 @@
 }
 
 .metadata strong {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 900;
 }
 
 .metadata small {
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 }
