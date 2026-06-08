@@ -102,6 +102,7 @@ function SoundClusterApp() {
     DEFAULT_AXIS_SELECTION,
   );
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [itunesItems, setItunesItems] = useState<ItunesTrackMetadata[]>([]);
   const [itunesSearchStatus, setItunesSearchStatus] =
     useState<ItunesSearchStatus>("idle");
@@ -226,6 +227,24 @@ function SoundClusterApp() {
         tracks: currentSnapshot.tracks.filter((track) => track.id !== selectedTrackId),
       };
     });
+  }, []);
+  const resetTracks = useCallback((): void => {
+    analysisTargetTrackIdRef.current = null;
+    appliedAnalysisResultRef.current = null;
+    setExtractingTrackId(null);
+    setLyricsLookupTrackId(null);
+    setSnapshot((currentSnapshot) => ({
+      ...currentSnapshot,
+      selectedTrackId: null,
+      tracks: [],
+    }));
+    setDebugResponse({
+      lyrics: {
+        body: null,
+        status: "idle",
+      },
+    });
+    setIsResetConfirmOpen(false);
   }, []);
   const searchItunesTracks = useCallback(async (query: string): Promise<void> => {
     const trimmedQuery = query.trim();
@@ -356,6 +375,14 @@ function SoundClusterApp() {
           onSearch={searchItunesTracks}
           status={itunesSearchStatus}
         />
+        <button
+          className={styles.resetButton}
+          disabled={visibleSnapshot.tracks.length === 0}
+          onClick={() => setIsResetConfirmOpen(true)}
+          type="button"
+        >
+          Reset
+        </button>
       </header>
       <div className={styles.rightRail}>
         <ControlPanel
@@ -430,6 +457,38 @@ function SoundClusterApp() {
             </svg>
           </button>
         </aside>
+      ) : null}
+      {isResetConfirmOpen ? (
+        <div
+          aria-labelledby="reset-confirm-title"
+          aria-modal="true"
+          className={styles.confirmOverlay}
+          role="dialog"
+        >
+          <section className={styles.confirmDialog}>
+            <span className={styles.confirmKicker}>Reset cluster</span>
+            <h2 id="reset-confirm-title">Remove all tracks?</h2>
+            <p>
+              This clears every rendered track from the current 3D space.
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.confirmSecondaryButton}
+                onClick={() => setIsResetConfirmOpen(false)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmDangerButton}
+                onClick={resetTracks}
+                type="button"
+              >
+                Reset
+              </button>
+            </div>
+          </section>
+        </div>
       ) : null}
       <ShareModal
         isOpen={isShareOpen}
