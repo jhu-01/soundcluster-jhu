@@ -1,100 +1,118 @@
 # SoundCluster Architecture
 
-이 문서는 SoundCluster의 기준 디렉토리 구조와 각 레이어의 책임을 정의합니다. 새 파일을 만들거나 기존 파일을 이동할 때는 이 구조를 우선합니다.
+SoundCluster는 곡 검색 결과와 가사 정보를 기반으로 Gemini가 5차원 감정 벡터를 추출하고, React Three Fiber가 이를 3D 공간에 배치하는 음악 감정 클러스터링 앱이다.
+
+## Directory Map
 
 ```text
-soundcluster/
-├── client/                              # Frontend Layer: Vite + React + TS + R3F
-│   ├── public/                          # 정적 에셋
-│   └── src/
-│       ├── canvas/                      # 3D WebGL / React Three Fiber 컴포넌트
-│       │   ├── GridBase.tsx             # 바닥 그리드
-│       │   ├── StarsCanvas.tsx          # R3F 메인 캔버스와 카메라 컨트롤
-│       │   ├── StarNode.tsx             # 개별 음악 노드
-│       │   └── StarNodeCollection.tsx   # 음악 노드 그룹 관리
-│       ├── components/                  # 2D HUD 및 일반 React 컴포넌트
-│       │   ├── ControlPanel.tsx         # 5차원 감성 축 제어
-│       │   ├── SearchBar.tsx            # 곡과 아티스트 검색 입력
-│       │   ├── ShareModal.tsx           # 공유 링크 모달
-│       │   └── ItunesSearchPanel.tsx     # iTunes 검색 결과 패널
-│       ├── context/                     # 전역 상태 컨텍스트
-│       ├── hooks/                       # 클라이언트 커스텀 훅
-│       ├── styles/                      # CSS Modules 및 디자인 토큰
-│       ├── App.tsx                      # 앱 루트
-│       └── main.tsx                     # Vite 진입점
-│
-├── server/                              # Backend Layer: Express
-│   └── src/
-│       ├── config/                      # 환경 설정, DB, Gemini 클라이언트
-│       ├── controllers/                 # 요청 처리와 스트리밍 제어
-│       ├── routes/                      # API 라우팅
-│       └── app.ts                       # Express 서버 진입점
-│
-├── shared/                              # Shared Layer
-│   ├── constants/                       # 클라이언트와 서버가 공유하는 상수
-│   ├── types/                           # 공통 타입
-│   └── utils/                           # 순수 유틸리티
-│
-├── docs/                                # 프로젝트 문서
-│   ├── agents.md                        # AI 에이전트 작업 지침
-│   ├── Architecture.md                  # 아키텍처 기준 문서
-│   ├── checklist.md                     # 구현 체크리스트
-│   └── prompt-guideline.md              # Gemini 분석 프롬프트 명세
-│
-├── .gitignore
-├── package.json
-├── pnpm-lock.yaml
-└── README.md
+soundcluster-jhu/
+|-- client/                     # React + Vite frontend
+|   `-- src/
+|       |-- canvas/             # R3F/WebGL scene, star nodes, relation lines
+|       |-- components/         # 2D HUD, search, result panel, controls, share modal
+|       |-- constants/          # frontend-only UI constants
+|       |-- context/            # analysis stream context
+|       |-- hooks/              # EventSource and stream state hooks
+|       |-- utils/              # projection, snapshot, API client helpers
+|       |-- data/               # initial mock tracks
+|       `-- types/              # frontend-specific aliases
+|
+|-- server/                     # Express backend
+|   `-- src/
+|       |-- app.ts              # Express app, CORS, route mounting, health route
+|       |-- config/             # env, DB, Gemini, iTunes, LRCLIB clients
+|       |-- controllers/        # request orchestration, SSE response handling
+|       |-- routes/             # route bindings
+|       |-- services/           # analysis pipeline and Gemini integration
+|       |-- repositories/       # MySQL persistence for cache and snapshots
+|       |-- database/           # schema bootstrap
+|       `-- validation/         # LLM response validation
+|
+|-- shared/                     # contracts shared by FE and BE
+|   |-- constants/              # route prefixes, model defaults, server constants
+|   |-- types/                  # API payload and domain types
+|   `-- utils/                  # pure validation and mapping helpers
+|
+|-- tests/                      # node:test contract tests
+|-- docs/                       # project planning and operating documents
+`-- codex/skills/               # project-specific Codex skills
 ```
 
----
+## Runtime Layers
 
-## Layer Responsibilities
+### Frontend
 
-### `client/`
+- `App.tsx` is the main state coordinator.
+- Search input calls the backend iTunes proxy.
+- Result rows trigger lyrics lookup and Gemini analysis streaming.
+- The render source of truth is `ClusterShareSnapshot`.
+- Track emotion values are not user-editable; users only toggle which axes are used for projection.
+- `StarsCanvas.tsx` projects 5D emotion vectors into 3D coordinates and renders:
+  - background starfield
+  - track nodes
+  - selected track state
+  - nearest and farthest relation lines
+  - hover and pinned metadata popups
 
-사용자 인터페이스와 3D 시각화를 담당합니다.
+### Backend
 
-- 서버와 통신해 음악 분석 스트림을 수신합니다.
-- 수신한 감성 벡터를 상태에 반영합니다.
-- 5차원 데이터를 3D 좌표로 변환해 R3F 캔버스에 렌더링합니다.
-- UI 스타일은 CSS Modules로 격리합니다.
+- Express exposes API routes under `/api/*`.
+- CORS is currently open for local frontend development.
+- iTunes and LRCLIB are called only from the backend.
+- Gemini is called only from the backend.
+- MySQL stores:
+  - analysis cache keyed by normalized title and artist
+  - share snapshots keyed by `nanoid`
+  - snapshot hash to reuse existing share ids for identical data
 
-### `server/`
+### Shared
 
-외부 API 연동, 분석 파이프라인, 캐싱, SSE 스트리밍을 담당합니다.
+- Shared route constants prevent frontend/backend path drift.
+- Shared types define iTunes metadata, lyrics results, SSE events, music analysis results, and share snapshots.
+- Shared validation verifies share snapshot shape before server persistence.
 
-- 외부 음악 메타데이터 API와 Gemini API Key를 서버에서만 관리합니다.
-- Gemini 응답을 JSON으로 검증합니다.
-- MySQL 캐시를 조회하고 저장합니다.
-- 분석 진행 상태와 결과를 SSE로 클라이언트에 전달합니다.
+## Data Model Summary
 
-### `shared/`
+```text
+Track
+|-- id
+|-- itunesTrackId?
+|-- itunesUrl?
+|-- title
+|-- artist
+|-- albumImageUrl?
+`-- emotions
+    |-- energy
+    |-- valence
+    |-- tempoDensity
+    |-- spaceDepth
+    `-- tension
+```
 
-클라이언트와 서버가 공유하는 계약을 보관합니다.
+```text
+ClusterShareSnapshot
+|-- version
+|-- selectedTrackId
+|-- cameraPosition
+|-- cameraTarget
+`-- tracks[]
+```
 
-- 감성 벡터, 음악 메타데이터, SSE 이벤트 타입을 정의합니다.
-- API 경로와 고정 상수를 관리합니다.
-- 순수 계산 함수와 데이터 정규화 유틸을 제공합니다.
+## Placement Rules
 
-### `docs/`
+- R3F or Three.js rendering code goes under `client/src/canvas/`.
+- Ordinary React HUD components go under `client/src/components/`.
+- Frontend API clients and pure projection helpers go under `client/src/utils/`.
+- Backend route bindings go under `server/src/routes/`.
+- Request orchestration goes under `server/src/controllers/`.
+- Gemini/cache/business flow goes under `server/src/services/`.
+- MySQL persistence goes under `server/src/repositories/`.
+- Cross-layer constants, payload types, and pure validators go under `shared/`.
 
-프로젝트 의사결정과 에이전트 작업 기준을 보관합니다.
+## Current Constraints
 
-- `agents.md`: Codex와 Gemini 등 AI 에이전트가 따를 작업 지침
-- `Architecture.md`: 디렉토리와 레이어 책임
-- `checklist.md`: 구현 순서와 이슈 단위 작업
-- `prompt-guideline.md`: Gemini 분석 프롬프트와 JSON 출력 계약
-
----
-
-## File Placement Rules
-
-- 화면에 직접 렌더링되는 React 컴포넌트는 `client/src/components/`에 둡니다.
-- R3F 또는 Three.js 렌더링 컴포넌트는 `client/src/canvas/`에 둡니다.
-- 클라이언트 전용 API 구독 로직은 `client/src/hooks/`에 둡니다.
-- 서버 라우트는 `server/src/routes/`, 요청 처리 로직은 `server/src/controllers/`에 둡니다.
-- 환경 변수, DB 연결, Gemini 클라이언트 초기화는 `server/src/config/`에 둡니다.
-- 양쪽에서 공유하는 타입과 상수는 `shared/`에 둡니다.
-
-새 레이어나 최상위 디렉토리가 필요하면 기존 구조로 해결할 수 없는 이유를 먼저 확인합니다.
+- The app uses iTunes Search API, not Spotify.
+- Lyrics are optional. LRCLIB failure does not block Gemini analysis.
+- Gemini response values must remain in the `0.0` to `1.0` range.
+- Share URLs store only the compact snapshot id in the URL; the snapshot body is stored in MySQL.
+- Camera POV is restored from snapshot defaults or stored snapshot values, while projection is recomputed on the frontend.

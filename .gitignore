@@ -143,4 +143,5 @@ test-dist
 .svelte-kit
 
 .env
+.wiki-worktree/
 # End of https://www.toptal.com/developers/gitignore/api/node

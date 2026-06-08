@@ -14,6 +14,8 @@ Review changed code against SoundCluster rules and report actionable violations.
 - Changed code from `git diff`, staged diff, or a user-provided patch.
 - `docs/agents.md` for coding rules.
 - `docs/Architecture.md` for directory and layer boundaries.
+- `docs/routing.md` for route names and API contracts.
+- `docs/pipeline.md` for data flow expectations.
 - `docs/checklist.md` for the current issue scope.
 - Relevant source files when a diff depends on surrounding context.
 
@@ -37,6 +39,8 @@ Review changed code against SoundCluster rules and report actionable violations.
 - No clever one-line compression that hides intent.
 - No nested condition expressions that call additional logic in a way that makes control flow hard to read.
 - No repeated hardcoded strings, route paths, ports, API URLs, status names, or vector keys that should be constants.
+- No route names that drift from `shared/constants/*` or `docs/routing.md`.
+- No data flow that skips required validation, cache lookup, or fallback behavior from `docs/pipeline.md`.
 - No duplicated data shapes that should become a shared type, schema, constant object, or reusable component.
 - No unrelated logic scattered across distant sections when it belongs together.
 - No large component absorbing multiple responsibilities that should be split into cohesive functions, hooks, utilities, or components.
@@ -45,6 +49,7 @@ Review changed code against SoundCluster rules and report actionable violations.
 - Frontend code must follow CSS Modules and avoid unapproved UI libraries.
 - Server code must keep secrets on the backend and avoid frontend exposure.
 - Shared contracts must live under `shared/types`, `shared/constants`, or `shared/utils` when both client and server need them.
+- Current implemented external APIs are iTunes Search API, LRCLIB, and Gemini. Flag accidental Spotify references unless the change is explicitly migrating providers.
 
 ## Readability Rules
 

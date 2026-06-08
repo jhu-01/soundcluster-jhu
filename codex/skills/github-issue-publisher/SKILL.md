@@ -16,7 +16,7 @@ Skills alone do not write to GitHub. Before creating or updating issues, use the
 ## Inputs
 
 - Checklist item text from `docs/checklist.md`.
-- Related architecture constraints from `docs/Architecture.md`.
+- Related product and architecture constraints from `docs/product-plan.md`, `docs/Architecture.md`, `docs/pipeline.md`, and `docs/routing.md`.
 - Current implementation state when issue scope depends on existing files.
 - Existing GitHub issue list or issue view results when avoiding duplicates.
 
@@ -26,7 +26,7 @@ Skills alone do not write to GitHub. Before creating or updating issues, use the
 2. Inspect existing GitHub issues for duplicates or already assigned numbers.
 3. For each item, create a GitHub issue draft:
    - Title: preserve checklist prefix such as `[Env]`, `[Feat]`, `[Fix]`.
-   - Body: include goal, scope, task list, validation, and architecture notes.
+   - Body: include goal, scope, task list, validation, routing impact, data pipeline impact, and architecture notes.
    - Labels: suggest labels only if the repository already uses them or the user asks.
 4. Use GitHub MCP or `gh issue create` to publish.
 5. Update `docs/checklist.md` with the assigned issue number only after creation succeeds.
@@ -50,7 +50,10 @@ Skills alone do not write to GitHub. Before creating or updating issues, use the
 - [ ] <command or manual check>
 
 ## Notes
+- Product reference: docs/product-plan.md
 - Architecture reference: docs/Architecture.md
+- Pipeline reference: docs/pipeline.md
+- Routing reference: docs/routing.md
 ```
 
 ## Rules
@@ -60,3 +63,5 @@ Skills alone do not write to GitHub. Before creating or updating issues, use the
 - Do not fake issue creation. If the tool fails, report the exact failure and keep the checklist unchanged.
 - Keep issue titles short and implementation-oriented.
 - Use Korean for issue content when the checklist item is Korean.
+- Use actual implemented API names. Current external APIs are iTunes Search API, LRCLIB, and Gemini.
+- Do not publish Spotify-related issue text unless the user explicitly reintroduces Spotify.
