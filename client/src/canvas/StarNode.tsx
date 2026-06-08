@@ -38,6 +38,9 @@ const NODE_MARKER_SCALE = 0.44;
 const NODE_CORE_SCALE = 0.34;
 const NODE_GLOW_SCALE = 2.05;
 const GLOW_TEXTURE_SIZE = 128;
+const SELECTED_SCALE_MULTIPLIER = 3;
+const RELATED_SCALE_MULTIPLIER = 2;
+const HOVER_SCALE_MULTIPLIER = 1.16;
 
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
@@ -87,6 +90,21 @@ const shouldPinPointPopup = (
   return relationRole === "nearest" || relationRole === "farthest";
 };
 
+const resolveScaleMultiplier = (
+  isHovered: boolean,
+  relationRole: StarNodeRelationRole | null,
+): number => {
+  if (relationRole === "selected") {
+    return SELECTED_SCALE_MULTIPLIER;
+  }
+
+  if (relationRole === "nearest" || relationRole === "farthest") {
+    return RELATED_SCALE_MULTIPLIER;
+  }
+
+  return isHovered ? HOVER_SCALE_MULTIPLIER : 1;
+};
+
 export function StarNode({
   index,
   isSelected,
@@ -126,7 +144,8 @@ export function StarNode({
     const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
     const hoverEasing = 1 - Math.exp(-NODE_HOVER_SPEED * delta);
     const isHighlighted = isHovered || isSelected || Boolean(relationRole);
-    const targetScale = node.scale * NODE_MARKER_SCALE * (isHighlighted ? 1.16 : 1);
+    const targetScale =
+      node.scale * NODE_MARKER_SCALE * resolveScaleMultiplier(isHovered, relationRole);
     const nextScale = visual.scale.x + (targetScale - visual.scale.x) * hoverEasing;
     const targetGlowOpacity = isHighlighted ? 0.9 : 0.66;
 
@@ -184,15 +203,6 @@ export function StarNode({
           />
         </mesh>
       </group>
-      {relationRole ? (
-        <Html center distanceFactor={10} position={[0, 0, 0]} zIndexRange={[18, 0]}>
-          <span
-            className={styles.markerRing}
-            data-role={relationRole}
-            aria-hidden="true"
-          />
-        </Html>
-      ) : null}
       {shouldShowPointPopup ? (
         <Html center distanceFactor={7} position={[0, 0.62, 0]} zIndexRange={[24, 0]}>
           <aside

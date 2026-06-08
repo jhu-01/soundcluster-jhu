@@ -76,6 +76,12 @@ const createFallbackLabel = (title: string): string => {
 
 type ItunesSearchStatus = "idle" | "loading" | "error";
 
+interface DebugResponseState {
+  body: unknown;
+  label: string;
+  status: "idle" | "loading" | "success" | "error";
+}
+
 function SoundClusterApp() {
   const { state, startStream } = useAnalysis();
   const analysisTargetTrackIdRef = useRef<string | null>(null);
@@ -97,6 +103,11 @@ function SoundClusterApp() {
     "Search by song title or artist.",
   );
   const [extractingTrackId, setExtractingTrackId] = useState<string | null>(null);
+  const [debugResponse, setDebugResponse] = useState<DebugResponseState>({
+    body: null,
+    label: "iTunes search",
+    status: "idle",
+  });
   const visibleSnapshot = snapshot;
   const relation = useMemo(() => {
     return createTrackRelationSummary(
@@ -161,23 +172,38 @@ function SoundClusterApp() {
 
     setItunesSearchStatus("loading");
     setItunesSearchMessage("Searching iTunes...");
+    setDebugResponse({
+      body: { title: trimmedQuery },
+      label: "GET /api/itunes/search",
+      status: "loading",
+    });
 
     try {
       const response = await fetchItunesTracks(trimmedQuery, "");
 
       setItunesItems(response.items);
       setItunesSearchStatus("idle");
+      setDebugResponse({
+        body: response,
+        label: "GET /api/itunes/search",
+        status: "success",
+      });
       setItunesSearchMessage(
         response.items.length > 0
           ? `${response.items.length} tracks found.`
           : "No tracks found.",
       );
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
       setItunesItems([]);
       setItunesSearchStatus("error");
-      setItunesSearchMessage(
-        error instanceof Error ? error.message : String(error),
-      );
+      setDebugResponse({
+        body: { error: errorMessage },
+        label: "GET /api/itunes/search",
+        status: "error",
+      });
+      setItunesSearchMessage(errorMessage);
     }
   }, []);
   const extractItunesTrack = useCallback(
@@ -256,6 +282,14 @@ function SoundClusterApp() {
         onExtractTrack={extractItunesTrack}
         status={itunesSearchStatus}
       />
+      <aside className={styles.responseDebugPanel} aria-label="API response debug">
+        <span className={styles.responseDebugHeader}>
+          <strong>Response</strong>
+          <small data-status={debugResponse.status}>{debugResponse.status}</small>
+        </span>
+        <span className={styles.responseDebugLabel}>{debugResponse.label}</span>
+        <pre>{JSON.stringify(debugResponse.body, null, 2)}</pre>
+      </aside>
       {selectedTrack ? (
         <aside className={styles.selectedTrackHud} aria-label="Selected track">
           {selectedTrack.albumImageUrl ? (

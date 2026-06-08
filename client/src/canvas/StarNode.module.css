@@ -19,54 +19,6 @@
   will-change: transform;
 }
 
-.markerRing {
-  display: block;
-  width: 15px;
-  height: 15px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95), #b18cff, #6ee7f9) border-box;
-  box-shadow: 0 0 12px rgba(139, 108, 255, 0.42);
-  pointer-events: none;
-}
-
-.markerRing[data-role="nearest"] {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95), #a78bfa, #67e8f9) border-box;
-  box-shadow: 0 0 12px rgba(167, 139, 250, 0.44);
-}
-
-.markerRing[data-role="farthest"] {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.95), #f0abfc, #fb7185) border-box;
-  box-shadow: 0 0 12px rgba(240, 171, 252, 0.4);
-}
-
-.popup[data-role="selected"],
-.popup[data-role="nearest"],
-.popup[data-role="farthest"] {
-  border-color: transparent;
-  background:
-    linear-gradient(rgba(8, 13, 22, 0.9), rgba(8, 13, 22, 0.9)) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), #b18cff, #6ee7f9) border-box;
-}
-
-.popup[data-role="nearest"] {
-  background:
-    linear-gradient(rgba(8, 13, 22, 0.9), rgba(8, 13, 22, 0.9)) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), #a78bfa, #67e8f9) border-box;
-}
-
-.popup[data-role="farthest"] {
-  background:
-    linear-gradient(rgba(8, 13, 22, 0.9), rgba(8, 13, 22, 0.9)) padding-box,
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), #f0abfc, #fb7185) border-box;
-}
-
 .albumImage,
 .albumFallback {
   display: grid;
