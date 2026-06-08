@@ -18,6 +18,33 @@
   backdrop-filter: blur(16px);
 }
 
+.markerRing {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    linear-gradient(135deg, #facc15, #34e5d6, #8b5cf6) border-box;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.38);
+  pointer-events: none;
+}
+
+.markerRing[data-role="nearest"] {
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    linear-gradient(135deg, #34e5d6, #8b5cf6) border-box;
+  box-shadow: 0 0 18px rgba(52, 229, 214, 0.42);
+}
+
+.markerRing[data-role="farthest"] {
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    linear-gradient(135deg, #ff6ba8, #facc15) border-box;
+  box-shadow: 0 0 18px rgba(255, 107, 168, 0.42);
+}
+
 .popup[data-role="selected"],
 .popup[data-role="nearest"],
 .popup[data-role="farthest"] {

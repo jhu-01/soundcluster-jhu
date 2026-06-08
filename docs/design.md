@@ -26,9 +26,11 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Selection changes recompute nearest/farthest relations while preserving every existing track node.
 - Draw nearest relation as a solid line and farthest relation as a dotted or dashed line from the selected song.
 - Song marker colors are stable-random by track identity so adjacent tracks can be visually distinguished.
+- Stable-random colors must not be overridden by streaming visual frame colors.
 - Selected, nearest, and farthest tracks keep their metadata popups pinned.
 - Hovering any non-pinned track temporarily shows the same metadata popup.
 - Pinned relation popups use gradient borders to distinguish selected, nearest, and farthest states.
+- Selected, nearest, and farthest song markers also show a gradient ring around the point itself.
 - The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
 
 ## Concrete Style Rules

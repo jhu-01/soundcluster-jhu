@@ -34,7 +34,7 @@ const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
 const NEON_HOVER_COLOR = "#67e8f9";
 const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 12, 12];
-const NODE_MARKER_SCALE = 0.76;
+const NODE_MARKER_SCALE = 0.58;
 
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
@@ -120,6 +120,15 @@ export function StarNode({
           roughness={0.12}
         />
       </mesh>
+      {relationRole ? (
+        <Html center distanceFactor={10} position={[0, 0, 0]} zIndexRange={[18, 0]}>
+          <span
+            className={styles.markerRing}
+            data-role={relationRole}
+            aria-hidden="true"
+          />
+        </Html>
+      ) : null}
       {isHovered || relationRole ? (
         <Html center distanceFactor={7} position={[0, 0.66, 0]} zIndexRange={[24, 0]}>
           <aside

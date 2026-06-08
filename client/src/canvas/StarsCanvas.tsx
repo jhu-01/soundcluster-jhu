@@ -63,9 +63,24 @@ interface BaseTrackPoint extends StarNodeData {
   baseIntensity: number;
 }
 
-const RANDOM_TRACK_COLOR_SATURATION = 88;
-const RANDOM_TRACK_COLOR_LIGHTNESS = 62;
-const HUE_RANGE = 360;
+const TRACK_COLOR_PALETTE = [
+  "#34e5d6",
+  "#8b5cf6",
+  "#ffd84a",
+  "#ff6ba8",
+  "#60a5fa",
+  "#f97316",
+  "#a3e635",
+  "#f472b6",
+  "#22c55e",
+  "#c084fc",
+  "#fb7185",
+  "#38bdf8",
+  "#fde047",
+  "#2dd4bf",
+  "#e879f9",
+  "#facc15",
+] as const;
 
 const createStringHash = (value: string): number => {
   let hash = 0;
@@ -79,9 +94,8 @@ const createStringHash = (value: string): number => {
 
 const createTrackColor = (track: ClusterShareTrack): string => {
   const colorSeed = `${track.id}:${track.title}:${track.artist}`;
-  const hue = createStringHash(colorSeed) % HUE_RANGE;
 
-  return `hsl(${hue} ${RANDOM_TRACK_COLOR_SATURATION}% ${RANDOM_TRACK_COLOR_LIGHTNESS}%)`;
+  return TRACK_COLOR_PALETTE[createStringHash(colorSeed) % TRACK_COLOR_PALETTE.length];
 };
 
 const createNodeIntensity = (
@@ -133,11 +147,9 @@ const createBaseTrackPoints = (
 const createTrackPoints = (
   baseTrackPoints: BaseTrackPoint[],
   visual: AnalyzeStreamVisualFrame,
-  isFinal: boolean,
   relation: TrackRelationSummary | null,
 ): StarNodeData[] => {
   return baseTrackPoints.map((point) => {
-    const baseColor = isFinal ? point.baseColor : visual.color;
     const baseIntensity = point.baseIntensity * (0.74 + visual.intensity * 0.42);
 
     return {
@@ -146,7 +158,7 @@ const createTrackPoints = (
       title: point.title,
       artist: point.artist,
       position: point.position,
-      color: baseColor,
+      color: point.baseColor,
       scale: point.scale,
       intensity: createNodeIntensity(point.id, baseIntensity, relation),
     };
@@ -226,13 +238,12 @@ function TrackNodes({
 }: TrackNodesProps) {
   const { state } = useAnalysis();
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
-  const isFinal = state.status === "done";
   const baseTrackPoints = useMemo(() => {
     return createBaseTrackPoints(tracks, axisSelection);
   }, [axisSelection, tracks]);
   const trackPoints = useMemo(() => {
-    return createTrackPoints(baseTrackPoints, visual, isFinal, relation);
-  }, [baseTrackPoints, isFinal, relation, visual]);
+    return createTrackPoints(baseTrackPoints, visual, relation);
+  }, [baseTrackPoints, relation, visual]);
   const visibleTrackPoints = useMemo(() => {
     return trackPoints;
   }, [trackPoints]);
