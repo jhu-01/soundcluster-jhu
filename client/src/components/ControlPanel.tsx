@@ -1,4 +1,3 @@
-import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 import {
   EMOTION_AXIS_CONFIGS,
   MIN_ACTIVE_AXIS_COUNT,
@@ -9,7 +8,6 @@ import styles from "./ControlPanel.module.css";
 
 interface ControlPanelProps {
   axisSelection: AxisSelection;
-  values: EmotionVector;
   onToggleAxis: (axis: EmotionAxis) => void;
 }
 
@@ -19,7 +17,6 @@ const countActiveAxes = (axisSelection: AxisSelection): number => {
 
 export function ControlPanel({
   axisSelection,
-  values,
   onToggleAxis,
 }: ControlPanelProps) {
   const activeAxisCount = countActiveAxes(axisSelection);
@@ -31,18 +28,19 @@ export function ControlPanel({
         <output>{activeAxisCount} / 5</output>
       </div>
       {EMOTION_AXIS_CONFIGS.map((axis) => {
-        const axisValue = values[axis.key];
         const isChecked = axisSelection[axis.key];
         const isLocked = isChecked && activeAxisCount <= MIN_ACTIVE_AXIS_COUNT;
 
         return (
           <label className={styles.control} data-active={isChecked} key={axis.key}>
             <input
+              aria-checked={isChecked}
               checked={isChecked}
               disabled={isLocked}
               id={`axis-${axis.key}`}
               name={`axis-${axis.key}`}
               onChange={() => onToggleAxis(axis.key)}
+              role="switch"
               type="checkbox"
             />
             <span
@@ -51,7 +49,7 @@ export function ControlPanel({
             />
             <span className={styles.header}>
               <span>{axis.label}</span>
-              <output>{axisValue.toFixed(2)}</output>
+              <span className={styles.state}>{isChecked ? "On" : "Off"}</span>
             </span>
           </label>
         );

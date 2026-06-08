@@ -322,10 +322,11 @@ export function StarsCanvas({
       gl={CANVAS_GL}
       onPointerMissed={() => onPreviewTrack(null)}
     >
-      <color attach="background" args={["#06120f"]} />
-      <ambientLight intensity={0.54} />
-      <directionalLight position={[6, 8, 5]} intensity={1.35} />
-      <pointLight position={[-5, 2, -3]} intensity={1.25} color="#22d3ee" />
+      <color attach="background" args={["#02040a"]} />
+      <ambientLight intensity={0.42} />
+      <directionalLight position={[6, 8, 5]} intensity={1.15} />
+      <pointLight position={[-5, 2, -3]} intensity={1.28} color="#34e5d6" />
+      <pointLight position={[5, 4, 5]} intensity={0.7} color="#7c4dff" />
       <Stars {...STAR_FIELD_CONFIG} fade />
       <GridBase />
       <TrackNodes

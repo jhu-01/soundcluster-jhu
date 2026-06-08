@@ -1,20 +1,22 @@
 .card {
   position: fixed;
-  right: 18px;
-  top: 18px;
+  left: 50%;
+  bottom: 76px;
   z-index: 12;
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   width: min(340px, calc(100vw - 36px));
   min-height: 92px;
+  transform: translateX(-50%);
   gap: 12px;
   align-items: center;
   padding: 10px;
-  border: 1px solid rgba(94, 234, 212, 0.34);
+  border: 1px solid rgba(52, 229, 214, 0.32);
   border-radius: 8px;
-  color: #e6fffb;
-  background: rgba(6, 18, 15, 0.88);
+  color: var(--color-text-primary);
+  background: var(--color-panel-strong);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px);
   pointer-events: none;
 }
 
@@ -27,13 +29,14 @@
 
 .albumImage {
   object-fit: cover;
+  box-shadow: 0 0 18px rgba(52, 229, 214, 0.18);
 }
 
 .albumFallback {
   display: grid;
   place-items: center;
-  color: #05201d;
-  background: #5eead4;
+  color: var(--color-bg);
+  background: linear-gradient(135deg, var(--color-accent-purple), var(--color-accent-cyan));
   font-weight: 900;
 }
 
@@ -47,8 +50,8 @@
   justify-self: flex-start;
   padding: 3px 6px;
   border-radius: 999px;
-  color: #05201d;
-  background: #5eead4;
+  color: var(--color-bg);
+  background: var(--color-accent-yellow);
   font-size: 11px;
   font-weight: 900;
 }
@@ -65,14 +68,13 @@
 }
 
 .metadata span {
-  color: #a8c7c2;
+  color: var(--color-text-secondary);
   font-size: 13px;
 }
 
 @media (max-width: 620px) {
   .card {
-    top: 12px;
-    right: 12px;
+    bottom: 70px;
     grid-template-columns: 58px minmax(0, 1fr);
     width: min(300px, calc(100vw - 24px));
     min-height: 76px;

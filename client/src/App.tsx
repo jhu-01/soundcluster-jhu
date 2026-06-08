@@ -18,7 +18,6 @@ import { StreamingLogViewer } from "./components/StreamingLogViewer";
 import { TrackHoverCard } from "./components/TrackHoverCard";
 import {
   DEFAULT_AXIS_SELECTION,
-  DEFAULT_EMOTION_VECTOR,
   MIN_ACTIVE_AXIS_COUNT,
   type AxisSelection,
   type EmotionAxis,
@@ -27,10 +26,7 @@ import { AnalysisProvider } from "./context/AnalysisProvider";
 import { useAnalysis } from "./context/AnalysisContext";
 import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
-import type {
-  ClusterShareSnapshot,
-  ClusterShareTrack,
-} from "./types/shareSnapshot";
+import type { ClusterShareSnapshot } from "./types/shareSnapshot";
 import { findSnapshotTrack } from "./utils/snapshotSelection";
 import {
   createShareSnapshotUrl,
@@ -60,24 +56,6 @@ const createDefaultSnapshot = (): ClusterShareSnapshot => {
 
 const clampUnitValue = (value: number): number => {
   return Math.max(0, Math.min(1, value));
-};
-
-const findTrackById = (
-  tracks: ClusterShareTrack[],
-  trackId: string | null,
-): ClusterShareTrack | null => {
-  if (!trackId) {
-    return null;
-  }
-
-  return tracks.find((track) => track.id === trackId) ?? null;
-};
-
-const findSelectedTrack = (
-  tracks: ClusterShareTrack[],
-  selectedTrackId: string | null,
-): ClusterShareTrack | null => {
-  return findTrackById(tracks, selectedTrackId) ?? tracks[0] ?? null;
 };
 
 const createMutatedSnapshot = (
@@ -172,9 +150,6 @@ function SoundClusterApp() {
 
     return applyAnalysisResultToSnapshot(snapshot, state.result);
   }, [snapshot, state.result]);
-  const selectedTrack = useMemo(() => {
-    return findSelectedTrack(visibleSnapshot.tracks, visibleSnapshot.selectedTrackId);
-  }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
   const previewTrack = useMemo(() => {
     if (!previewTrackId) {
       return null;
@@ -207,7 +182,6 @@ function SoundClusterApp() {
 
     return null;
   }, [previewTrack, relation]);
-  const activeEmotions = selectedTrack?.emotions ?? DEFAULT_EMOTION_VECTOR;
   const isCacheHit = useMemo(() => {
     return state.events.some((event) => event.message === ANALYZE_CACHE_HIT_MESSAGE);
   }, [state.events]);
@@ -270,21 +244,24 @@ function SoundClusterApp() {
         relationLabel={previewRelationLabel}
         track={previewTrack}
       />
-      <div className={styles.hud}>
+      <header className={styles.topBar}>
+        <div className={styles.brand}>
+          <strong>SoundCluster</strong>
+          <span>emotion mapped music space</span>
+        </div>
         <SearchBar />
+      </header>
+      <div className={styles.rightRail}>
         <ControlPanel
           axisSelection={axisSelection}
           onToggleAxis={toggleAxis}
-          values={activeEmotions}
         />
-        <div className={styles.stream}>
-          <StreamingLogViewer
-            events={state.events}
-            isCacheHit={isCacheHit}
-            result={state.result}
-            status={state.status}
-          />
-        </div>
+        <StreamingLogViewer
+          events={state.events}
+          isCacheHit={isCacheHit}
+          result={state.result}
+          status={state.status}
+        />
       </div>
       <button
         className={styles.shareButton}

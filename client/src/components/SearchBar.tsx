@@ -119,7 +119,7 @@ export function SearchBar() {
           />
         </label>
       </div>
-      <label className={styles.field}>
+      <label className={`${styles.field} ${styles.lyricsField}`}>
         <span>Lyrics</span>
         <textarea
           id="analysis-lyrics"
@@ -133,7 +133,7 @@ export function SearchBar() {
       </label>
       <div className={styles.actions}>
         <button disabled={isStreaming} type="submit">
-          Analyze
+          {isStreaming ? "Extracting" : "Extract"}
         </button>
         <output className={styles.message} data-error={Boolean(validationMessage)}>
           {visibleMessage}

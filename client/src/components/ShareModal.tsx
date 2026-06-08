@@ -34,11 +34,12 @@ export function ShareModal({ isOpen, snapshot, onClose }: ShareModalProps) {
         onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.header}>
-          <h2>Share Snapshot</h2>
+          <h2>Share Your Cluster</h2>
           <button aria-label="Close share modal" onClick={onClose} type="button">
             x
           </button>
         </div>
+        <p className={styles.description}>Your current cluster state is ready to share.</p>
         <input className={styles.urlInput} readOnly value={shareUrl} />
         <button className={styles.copyButton} onClick={handleCopy} type="button">
           {copyStatus === "copied" ? "Copied" : "Copy Link"}

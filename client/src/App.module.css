@@ -3,10 +3,38 @@
   width: 100vw;
   height: 100svh;
   overflow: hidden;
-  background: #06120f;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(124, 77, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 72% 42%, rgba(52, 229, 214, 0.12), transparent 34%),
+    #02040a;
+  color: var(--color-text-primary);
+}
+
+.shell::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.82) 0 1px, transparent 1.4px),
+    radial-gradient(circle, rgba(52, 229, 214, 0.42) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 216, 74, 0.34) 0 1px, transparent 1.6px);
+  background-position:
+    12px 18px,
+    74px 92px,
+    133px 46px;
+  background-size:
+    128px 128px,
+    192px 192px,
+    236px 236px;
+  opacity: 0.72;
+  animation: starTwinkle 3.8s ease-in-out infinite alternate;
 }
 
 .shell canvas {
+  position: relative;
+  z-index: 0;
   display: block;
 }
 
@@ -15,55 +43,141 @@
   width: 100%;
   height: 100%;
   place-items: center;
-  color: #d9fffb;
-  background: #06120f;
+  color: var(--color-text-primary);
+  background: var(--color-bg);
   font-weight: 800;
 }
 
-.hud {
+.topBar {
   position: absolute;
-  inset: 16px;
-  z-index: 2;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 8;
   display: grid;
-  grid-template-columns: minmax(0, 520px) minmax(260px, 320px);
-  grid-template-rows: auto auto;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
+  grid-template-columns: minmax(190px, 260px) minmax(420px, 760px);
+  gap: 16px;
+  align-items: start;
   pointer-events: none;
 }
 
-.hud > * {
+.topBar > *,
+.rightRail > * {
   pointer-events: auto;
 }
 
-.stream {
-  grid-column: 1;
+.brand {
+  display: grid;
+  gap: 2px;
+  min-height: 58px;
+  align-content: center;
+  padding: 10px 12px;
+  border: 1px solid var(--color-panel-border);
+  border-radius: 8px;
+  background: var(--color-panel);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(18px);
+}
+
+.brand strong {
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brand span {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.rightRail {
+  position: absolute;
+  top: 104px;
+  right: 16px;
+  z-index: 8;
+  display: grid;
+  width: min(320px, calc(100vw - 32px));
+  gap: 12px;
+  pointer-events: none;
 }
 
 .shareButton {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  left: 50%;
+  bottom: 16px;
   z-index: 10;
-  min-width: 92px;
-  padding: 10px 14px;
-  border: 1px solid rgba(94, 234, 212, 0.38);
+  min-width: 180px;
+  transform: translateX(-50%);
+  padding: 12px 18px;
+  border: 1px solid rgba(52, 229, 214, 0.42);
   border-radius: 6px;
-  color: #e6fffb;
-  background: rgba(6, 18, 15, 0.82);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  color: var(--color-bg);
+  background: linear-gradient(90deg, var(--color-accent-cyan), var(--color-accent-yellow));
+  box-shadow: 0 0 24px rgba(52, 229, 214, 0.22), var(--shadow-panel);
   font-weight: 800;
   cursor: pointer;
 }
 
-@media (max-width: 760px) {
-  .hud {
-    inset: 12px;
+@keyframes starTwinkle {
+  from {
+    filter: brightness(0.78);
+    opacity: 0.44;
+  }
+
+  to {
+    filter: brightness(1.24);
+    opacity: 0.82;
+  }
+}
+
+@media (max-width: 980px) {
+  .topBar {
     grid-template-columns: 1fr;
   }
 
-  .stream {
-    grid-column: auto;
+  .rightRail {
+    top: auto;
+    right: 12px;
+    bottom: 76px;
+  }
+}
+
+@media (max-width: 720px) {
+  .topBar {
+    inset: 12px 12px auto;
+    gap: 10px;
+  }
+
+  .rightRail {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-height: 42svh;
+    overflow: auto;
+  }
+
+  .brand {
+    min-height: auto;
+  }
+
+  .shareButton {
+    bottom: 12px;
+    width: min(260px, calc(100vw - 24px));
+  }
+}
+
+@media (max-height: 760px) and (min-width: 721px) {
+  .rightRail {
+    grid-template-columns: 1fr;
   }
 }

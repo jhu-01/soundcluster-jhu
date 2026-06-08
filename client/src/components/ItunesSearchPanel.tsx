@@ -42,6 +42,10 @@ export function ItunesSearchPanel({ onSelectTrack }: ItunesSearchPanelProps) {
 
   return (
     <section className={styles.panel} aria-label="iTunes metadata search">
+      <div className={styles.header}>
+        <strong>Search Results</strong>
+        <output>{items.length}</output>
+      </div>
       <form className={styles.form} onSubmit={handleSearch}>
         <input
           aria-label="Track title"
@@ -82,6 +86,9 @@ export function ItunesSearchPanel({ onSelectTrack }: ItunesSearchPanelProps) {
             <span>
               <strong>{item.title}</strong>
               <small>{item.artist}</small>
+            </span>
+            <span className={styles.addMark} aria-hidden="true">
+              +
             </span>
           </button>
         ))}
