@@ -1,8 +1,8 @@
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
-import { Color, Vector3 } from "three";
-import type { Group, Mesh, MeshStandardMaterial } from "three";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AdditiveBlending, CanvasTexture, Color, Vector3 } from "three";
+import type { Group, MeshStandardMaterial, SpriteMaterial } from "three";
 
 import styles from "./StarNode.module.css";
 
@@ -32,9 +32,14 @@ const NODE_SETTLE_SPEED = 2.8;
 const NODE_HOVER_SPEED = 8.5;
 const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
-const NEON_HOVER_COLOR = "#67e8f9";
-const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 12, 12];
-const NODE_MARKER_SCALE = 0.58;
+const NODE_CORE_COLOR = "#fff8ff";
+const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 16, 16];
+const NODE_MARKER_SCALE = 0.44;
+const NODE_CORE_SCALE = 0.34;
+const NODE_GLOW_SCALE = 2.05;
+const GLOW_TEXTURE_SIZE = 128;
+
+type PopupPlacement = "top" | "left" | "right";
 
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
@@ -48,6 +53,50 @@ const createEntryPosition = (index: number): Vector3 => {
   return new Vector3(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
 };
 
+const createGlowTexture = (colorValue: string): CanvasTexture => {
+  const color = new Color(colorValue);
+  const red = Math.round(color.r * 255);
+  const green = Math.round(color.g * 255);
+  const blue = Math.round(color.b * 255);
+  const canvas = document.createElement("canvas");
+  canvas.width = GLOW_TEXTURE_SIZE;
+  canvas.height = GLOW_TEXTURE_SIZE;
+  const context = canvas.getContext("2d");
+
+  if (context) {
+    const center = GLOW_TEXTURE_SIZE / 2;
+    const gradient = context.createRadialGradient(center, center, 0, center, center, center);
+
+    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+    gradient.addColorStop(0.2, "rgba(255, 248, 255, 0.96)");
+    gradient.addColorStop(0.45, `rgba(${red}, ${green}, ${blue}, 0.78)`);
+    gradient.addColorStop(0.72, `rgba(${red}, ${green}, ${blue}, 0.28)`);
+    gradient.addColorStop(1, `rgba(${red}, ${green}, ${blue}, 0)`);
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, GLOW_TEXTURE_SIZE, GLOW_TEXTURE_SIZE);
+  }
+
+  const texture = new CanvasTexture(canvas);
+  texture.needsUpdate = true;
+
+  return texture;
+};
+
+const getPopupPlacement = (
+  relationRole: StarNodeRelationRole | null,
+): PopupPlacement => {
+  if (relationRole === "selected") {
+    return "left";
+  }
+
+  if (relationRole === "nearest") {
+    return "right";
+  }
+
+  return "top";
+};
+
 export function StarNode({
   index,
   isSelected,
@@ -57,36 +106,46 @@ export function StarNode({
   relationRole,
 }: StarNodeProps) {
   const groupRef = useRef<Group>(null);
-  const meshRef = useRef<Mesh>(null);
-  const materialRef = useRef<MeshStandardMaterial>(null);
+  const visualRef = useRef<Group>(null);
+  const coreMaterialRef = useRef<MeshStandardMaterial>(null);
+  const glowMaterialRef = useRef<SpriteMaterial>(null);
   const [isHovered, setIsHovered] = useState(false);
   const targetPosition = useMemo(() => node.position.clone(), [node.position]);
   const entryPosition = useMemo(() => createEntryPosition(index), [index]);
   const baseColor = useMemo(() => new Color(node.color), [node.color]);
-  const hoverColor = useMemo(() => new Color(NEON_HOVER_COLOR), []);
+  const coreColor = useMemo(() => new Color(NODE_CORE_COLOR), []);
+  const glowTexture = useMemo(() => createGlowTexture(node.color), [node.color]);
+  const popupPlacement = getPopupPlacement(relationRole);
+
+  useEffect(() => {
+    return () => glowTexture.dispose();
+  }, [glowTexture]);
 
   useFrame((_, delta) => {
     const group = groupRef.current;
-    const mesh = meshRef.current;
-    const material = materialRef.current;
+    const visual = visualRef.current;
+    const coreMaterial = coreMaterialRef.current;
+    const glowMaterial = glowMaterialRef.current;
 
-    if (!group || !mesh || !material) {
+    if (!group || !visual || !coreMaterial || !glowMaterial) {
       return;
     }
 
     const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
     const hoverEasing = 1 - Math.exp(-NODE_HOVER_SPEED * delta);
     const isHighlighted = isHovered || isSelected || Boolean(relationRole);
-    const targetScale = node.scale * NODE_MARKER_SCALE * (isHighlighted ? 1.2 : 1);
-    const nextScale = mesh.scale.x + (targetScale - mesh.scale.x) * hoverEasing;
+    const targetScale = node.scale * NODE_MARKER_SCALE * (isHighlighted ? 1.16 : 1);
+    const nextScale = visual.scale.x + (targetScale - visual.scale.x) * hoverEasing;
+    const targetGlowOpacity = isHighlighted ? 0.9 : 0.66;
 
     group.position.lerp(targetPosition, settleEasing);
-    mesh.scale.setScalar(nextScale);
-    material.color.lerp(isHighlighted ? hoverColor : baseColor, hoverEasing);
-    material.emissive.lerp(isHighlighted ? hoverColor : baseColor, hoverEasing);
-    material.emissiveIntensity = isHighlighted
+    visual.scale.setScalar(nextScale);
+    coreMaterial.color.lerp(coreColor, hoverEasing);
+    coreMaterial.emissive.lerp(baseColor, hoverEasing);
+    coreMaterial.emissiveIntensity = isHighlighted
       ? node.intensity * 1.72
       : node.intensity;
+    glowMaterial.opacity += (targetGlowOpacity - glowMaterial.opacity) * hoverEasing;
   });
 
   return (
@@ -109,17 +168,30 @@ export function StarNode({
         onPreview(node);
       }}
     >
-      <mesh ref={meshRef} scale={node.scale * NODE_MARKER_SCALE}>
-        <sphereGeometry args={NODE_GEOMETRY_ARGS} />
-        <meshStandardMaterial
-          ref={materialRef}
-          color={node.color}
-          emissive={node.color}
-          emissiveIntensity={node.intensity * 1.6}
-          metalness={0}
-          roughness={0.12}
-        />
-      </mesh>
+      <group ref={visualRef} scale={node.scale * NODE_MARKER_SCALE}>
+        <sprite scale={[NODE_GLOW_SCALE, NODE_GLOW_SCALE, 1]}>
+          <spriteMaterial
+            ref={glowMaterialRef}
+            map={glowTexture}
+            transparent
+            opacity={0.66}
+            depthWrite={false}
+            blending={AdditiveBlending}
+            toneMapped={false}
+          />
+        </sprite>
+        <mesh scale={NODE_CORE_SCALE}>
+          <sphereGeometry args={NODE_GEOMETRY_ARGS} />
+          <meshStandardMaterial
+            ref={coreMaterialRef}
+            color={NODE_CORE_COLOR}
+            emissive={node.color}
+            emissiveIntensity={node.intensity * 1.6}
+            metalness={0}
+            roughness={0.08}
+          />
+        </mesh>
+      </group>
       {relationRole ? (
         <Html center distanceFactor={10} position={[0, 0, 0]} zIndexRange={[18, 0]}>
           <span
@@ -130,9 +202,10 @@ export function StarNode({
         </Html>
       ) : null}
       {isHovered || relationRole ? (
-        <Html center distanceFactor={7} position={[0, 0.66, 0]} zIndexRange={[24, 0]}>
+        <Html center distanceFactor={7} position={[0, 0.62, 0]} zIndexRange={[24, 0]}>
           <aside
             className={styles.popup}
+            data-placement={popupPlacement}
             data-role={relationRole ?? "hover"}
             aria-label="Track hover details"
           >

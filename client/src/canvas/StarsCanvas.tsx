@@ -64,22 +64,18 @@ interface BaseTrackPoint extends StarNodeData {
 }
 
 const TRACK_COLOR_PALETTE = [
-  "#34e5d6",
-  "#8b5cf6",
-  "#ffd84a",
-  "#ff6ba8",
-  "#60a5fa",
-  "#f97316",
-  "#a3e635",
-  "#f472b6",
-  "#22c55e",
-  "#c084fc",
-  "#fb7185",
-  "#38bdf8",
-  "#fde047",
-  "#2dd4bf",
-  "#e879f9",
-  "#facc15",
+  "#8b6cff",
+  "#a78bfa",
+  "#c4b5fd",
+  "#7c9cff",
+  "#93c5fd",
+  "#6ee7f9",
+  "#67e8f9",
+  "#d8b4fe",
+  "#e9d5ff",
+  "#f0abfc",
+  "#b7a4ff",
+  "#9f7aea",
 ] as const;
 
 const createStringHash = (value: string): number => {

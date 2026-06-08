@@ -27,7 +27,10 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Draw nearest relation as a solid line and farthest relation as a dotted or dashed line from the selected song.
 - Song marker colors are stable-random by track identity so adjacent tracks can be visually distinguished.
 - Stable-random colors must not be overridden by streaming visual frame colors.
+- Song marker colors stay within a narrow violet, lavender, cyan, and soft magenta range so tracks remain distinguishable without becoming candy-colored.
+- Song markers should read as small stars with a white core and soft colored halo, not as solid planets.
 - Selected, nearest, and farthest tracks keep their metadata popups pinned.
+- Pinned selected and nearest metadata popups should be separated horizontally when they are likely to overlap.
 - Hovering any non-pinned track temporarily shows the same metadata popup.
 - Pinned relation popups use gradient borders to distinguish selected, nearest, and farthest states.
 - Selected, nearest, and farthest song markers also show a gradient ring around the point itself.

@@ -14,35 +14,48 @@
     0 12px 28px rgba(0, 0, 0, 0.36),
     0 0 24px rgba(124, 77, 255, 0.2);
   pointer-events: none;
-  transform: translateY(-66%);
+  transform: translate(-50%, calc(-100% - 18px));
   backdrop-filter: blur(16px);
+  will-change: transform;
+}
+
+.popup[data-placement="left"] {
+  transform: translate(calc(-100% - 24px), -50%);
+}
+
+.popup[data-placement="right"] {
+  transform: translate(24px, -50%);
+}
+
+.popup[data-placement="top"] {
+  transform: translate(-50%, calc(-100% - 18px));
 }
 
 .markerRing {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   border: 2px solid transparent;
   border-radius: 999px;
   background:
     linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(135deg, #facc15, #34e5d6, #8b5cf6) border-box;
-  box-shadow: 0 0 18px rgba(250, 204, 21, 0.38);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), #b18cff, #6ee7f9) border-box;
+  box-shadow: 0 0 16px rgba(139, 108, 255, 0.48);
   pointer-events: none;
 }
 
 .markerRing[data-role="nearest"] {
   background:
     linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(135deg, #34e5d6, #8b5cf6) border-box;
-  box-shadow: 0 0 18px rgba(52, 229, 214, 0.42);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), #a78bfa, #67e8f9) border-box;
+  box-shadow: 0 0 16px rgba(167, 139, 250, 0.5);
 }
 
 .markerRing[data-role="farthest"] {
   background:
     linear-gradient(transparent, transparent) padding-box,
-    linear-gradient(135deg, #ff6ba8, #facc15) border-box;
-  box-shadow: 0 0 18px rgba(255, 107, 168, 0.42);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), #f0abfc, #fb7185) border-box;
+  box-shadow: 0 0 16px rgba(240, 171, 252, 0.46);
 }
 
 .popup[data-role="selected"],
@@ -51,19 +64,19 @@
   border-color: transparent;
   background:
     linear-gradient(rgba(8, 13, 22, 0.9), rgba(8, 13, 22, 0.9)) padding-box,
-    linear-gradient(135deg, #facc15, #34e5d6, #8b5cf6) border-box;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), #b18cff, #6ee7f9) border-box;
 }
 
 .popup[data-role="nearest"] {
   background:
     linear-gradient(rgba(8, 13, 22, 0.9), rgba(8, 13, 22, 0.9)) padding-box,
-    linear-gradient(135deg, #34e5d6, #8b5cf6) border-box;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), #a78bfa, #67e8f9) border-box;
 }
 
 .popup[data-role="farthest"] {
   background:
     linear-gradient(rgba(8, 13, 22, 0.9), rgba(8, 13, 22, 0.9)) padding-box,
-    linear-gradient(135deg, #ff6ba8, #facc15) border-box;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), #f0abfc, #fb7185) border-box;
 }
 
 .albumImage,
