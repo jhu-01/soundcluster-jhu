@@ -1,33 +1,23 @@
 import { OrbitControls, Stars } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import { Color, Vector3 } from "three";
-import type { Group, MeshStandardMaterial } from "three";
+import { useMemo, useRef, useState } from "react";
+import { Vector3 } from "three";
+import type { Group } from "three";
 
 import type { AnalyzeStreamVisualFrame } from "../../../shared/types/analyzeStream";
 import type { EmotionVector } from "../../../shared/types/musicAnalysis";
 import { useAnalysis } from "../context/AnalysisContext";
+import { mapEmotionVectorsToScenePointData } from "../utils/mds";
+import { ClusterCameraRig } from "./ClusterCameraRig";
 import { GridBase } from "./GridBase";
+import { StarNodeCollection } from "./StarNodeCollection";
+import type { StarNodeData } from "./StarNode";
 
 interface MockTrack {
   id: string;
   title: string;
   artist: string;
   emotions: EmotionVector;
-}
-
-interface TrackPoint {
-  id: string;
-  position: [number, number, number];
-  color: string;
-  scale: number;
-}
-
-interface AnimatedTrackNodeProps {
-  index: number;
-  point: TrackPoint;
-  visual: AnalyzeStreamVisualFrame;
-  isFinal: boolean;
 }
 
 const mockTracks: MockTrack[] = [
@@ -99,41 +89,16 @@ const DEFAULT_VISUAL_FRAME: AnalyzeStreamVisualFrame = {
   orbitSpeed: 0.08,
   color: "#5eead4",
 };
-
-const NODE_SETTLE_SPEED = 3.2;
-const STREAM_COLOR_BLEND_SPEED = 5.8;
-const ENTRY_RADIUS = 6.8;
-
-const mapUnitToScene = (value: number): number => {
-  return (value - 0.5) * 7.6;
-};
-
-const createEntryPosition = (index: number): Vector3 => {
-  const angle = index * 2.3999632297;
-
-  return new Vector3(
-    Math.cos(angle) * ENTRY_RADIUS,
-    (index % 4 - 1.5) * 0.42,
-    Math.sin(angle) * ENTRY_RADIUS,
-  );
-};
-
-const createTrackPoint = (track: MockTrack): TrackPoint => {
-  const { emotions } = track;
-  const hue = Math.round(180 + emotions.valence * 120 - emotions.tension * 42);
-  const lightness = Math.round(48 + emotions.energy * 18);
-
-  return {
-    id: track.id,
-    position: [
-      mapUnitToScene(emotions.energy),
-      mapUnitToScene(emotions.spaceDepth) * 0.72,
-      mapUnitToScene(emotions.valence),
-    ],
-    color: `hsl(${hue} 86% ${lightness}%)`,
-    scale: 0.16 + emotions.tempoDensity * 0.24,
-  };
-};
+const CANVAS_CAMERA = { position: [9.6, 6.8, 10.8] as [number, number, number], fov: 48 };
+const CANVAS_DPR: [number, number] = [1, 2];
+const CANVAS_GL = { antialias: true, alpha: false };
+const STAR_FIELD_CONFIG = {
+  radius: 64,
+  depth: 34,
+  count: 1400,
+  factor: 4,
+  speed: 0.35,
+} as const;
 
 const createSceneTracks = (analysisEmotions: EmotionVector | null): MockTrack[] => {
   return mockTracks.map((track, index) => {
@@ -148,63 +113,50 @@ const createSceneTracks = (analysisEmotions: EmotionVector | null): MockTrack[] 
   });
 };
 
-function AnimatedTrackNode({
-  index,
-  point,
-  visual,
-  isFinal,
-}: AnimatedTrackNodeProps) {
-  const groupRef = useRef<Group>(null);
-  const materialRef = useRef<MeshStandardMaterial>(null);
-  const targetColorRef = useRef(new Color(point.color));
-  const targetPosition = useMemo(() => {
-    return new Vector3(...point.position);
-  }, [point.position]);
-  const entryPosition = useMemo(() => createEntryPosition(index), [index]);
-
-  useFrame((_, delta) => {
-    const group = groupRef.current;
-    const material = materialRef.current;
-
-    if (!group || !material) {
-      return;
-    }
-
-    const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
-    const colorEasing = 1 - Math.exp(-STREAM_COLOR_BLEND_SPEED * delta);
-    const emissiveColor = isFinal ? point.color : visual.color;
-
-    group.position.lerp(targetPosition, settleEasing);
-    targetColorRef.current.set(emissiveColor);
-    material.emissive.lerp(targetColorRef.current, colorEasing);
-    material.emissiveIntensity = 0.82 + visual.intensity * 1.24;
-  });
-
-  return (
-    <group ref={groupRef} position={entryPosition}>
-      <mesh>
-        <sphereGeometry args={[point.scale, 32, 32]} />
-        <meshStandardMaterial
-          ref={materialRef}
-          color={point.color}
-          emissive={point.color}
-          emissiveIntensity={1.3}
-          roughness={0.34}
-        />
-      </mesh>
-    </group>
+const createTrackPoints = (
+  tracks: MockTrack[],
+  visual: AnalyzeStreamVisualFrame,
+  isFinal: boolean,
+): StarNodeData[] => {
+  const mappedPoints = mapEmotionVectorsToScenePointData(
+    tracks.map((track) => track.emotions),
   );
-}
+
+  return tracks.map((track, index) => {
+    const point = mappedPoints[index];
+
+    return {
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      position: point.position,
+      color: isFinal ? point.color : visual.color,
+      scale: point.scale,
+      intensity: point.intensity * (0.74 + visual.intensity * 0.42),
+    };
+  });
+};
+
+const baseTrackPoints = mapEmotionVectorsToScenePointData(
+  mockTracks.map((track) => track.emotions),
+);
+const clusterFocusPoint = baseTrackPoints.reduce((focusPoint, point) => {
+  return focusPoint.add(point.position);
+}, new Vector3()).divideScalar(baseTrackPoints.length);
 
 function TrackNodes() {
   const { state } = useAnalysis();
   const groupRef = useRef<Group>(null);
+  const [selectedTrack, setSelectedTrack] = useState<StarNodeData | null>(null);
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
-  const trackPoints = useMemo(() => {
-    return createSceneTracks(state.result?.emotions ?? null).map(createTrackPoint);
-  }, [state.result]);
-  const activeNodeCount = Math.min(visual.activeNodeCount, trackPoints.length);
   const isFinal = state.status === "done";
+  const sceneTracks = useMemo(() => {
+    return createSceneTracks(state.result?.emotions ?? null);
+  }, [state.result]);
+  const trackPoints = useMemo(() => {
+    return createTrackPoints(sceneTracks, visual, isFinal);
+  }, [isFinal, sceneTracks, visual]);
+  const activeNodeCount = Math.min(visual.activeNodeCount, trackPoints.length);
 
   useFrame((_, delta) => {
     if (!groupRef.current) {
@@ -216,39 +168,33 @@ function TrackNodes() {
 
   return (
     <group ref={groupRef}>
-      {trackPoints.slice(0, activeNodeCount).map((point, index) => (
-        <AnimatedTrackNode
-          index={index}
-          isFinal={isFinal}
-          key={point.id}
-          point={point}
-          visual={visual}
-        />
-      ))}
+      <StarNodeCollection
+        nodes={trackPoints.slice(0, activeNodeCount)}
+        onSelectNode={setSelectedTrack}
+        selectedNodeId={selectedTrack?.id ?? null}
+      />
     </group>
   );
 }
 
 export function StarsCanvas() {
   return (
-    <Canvas
-      camera={{ position: [6.4, 4.8, 7.6], fov: 48 }}
-      dpr={[1, 2]}
-      gl={{ antialias: true, alpha: false }}
-    >
+    <Canvas camera={CANVAS_CAMERA} dpr={CANVAS_DPR} gl={CANVAS_GL}>
       <color attach="background" args={["#06120f"]} />
       <ambientLight intensity={0.54} />
       <directionalLight position={[6, 8, 5]} intensity={1.35} />
       <pointLight position={[-5, 2, -3]} intensity={1.25} color="#22d3ee" />
-      <Stars radius={64} depth={34} count={1400} factor={4} fade speed={0.35} />
+      <Stars {...STAR_FIELD_CONFIG} fade />
       <GridBase />
       <TrackNodes />
+      <ClusterCameraRig focusPoint={clusterFocusPoint} />
       <OrbitControls
         enableDamping
         dampingFactor={0.06}
         maxDistance={16}
         maxPolarAngle={Math.PI * 0.48}
         minDistance={4}
+        target={clusterFocusPoint.toArray()}
       />
     </Canvas>
   );
