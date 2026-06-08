@@ -85,7 +85,6 @@ interface DebugResponseEntry {
 }
 
 interface DebugResponseState {
-  itunes: DebugResponseEntry;
   lyrics: DebugResponseEntry;
 }
 
@@ -114,10 +113,6 @@ function SoundClusterApp() {
     null,
   );
   const [debugResponse, setDebugResponse] = useState<DebugResponseState>({
-    itunes: {
-      body: null,
-      status: "idle",
-    },
     lyrics: {
       body: null,
       status: "idle",
@@ -152,11 +147,9 @@ function SoundClusterApp() {
         result: state.result,
         status: state.status,
       },
-      itunes: debugResponse.itunes,
       lrclib: debugResponse.lyrics,
     };
   }, [
-    debugResponse.itunes,
     debugResponse.lyrics,
     state.errorMessage,
     state.latestEvent,
@@ -166,7 +159,6 @@ function SoundClusterApp() {
   ]);
   const debugPanelStatus = useMemo<DebugResponseStatus>(() => {
     if (
-      debugResponse.itunes.status === "error" ||
       debugResponse.lyrics.status === "error" ||
       state.status === "error"
     ) {
@@ -178,7 +170,6 @@ function SoundClusterApp() {
     }
 
     if (
-      debugResponse.itunes.status === "success" ||
       debugResponse.lyrics.status === "success" ||
       state.status === "done"
     ) {
@@ -186,7 +177,7 @@ function SoundClusterApp() {
     }
 
     return "idle";
-  }, [debugResponse.itunes.status, debugResponse.lyrics.status, state.status]);
+  }, [debugResponse.lyrics.status, state.status]);
   const ignorePreviewTrack = useCallback((trackId: string | null): void => {
     void trackId;
   }, []);
@@ -221,6 +212,21 @@ function SoundClusterApp() {
       };
     });
   }, []);
+  const removeSelectedTrack = useCallback((): void => {
+    setSnapshot((currentSnapshot) => {
+      const selectedTrackId = currentSnapshot.selectedTrackId;
+
+      if (!selectedTrackId) {
+        return currentSnapshot;
+      }
+
+      return {
+        ...currentSnapshot,
+        selectedTrackId: null,
+        tracks: currentSnapshot.tracks.filter((track) => track.id !== selectedTrackId),
+      };
+    });
+  }, []);
   const searchItunesTracks = useCallback(async (query: string): Promise<void> => {
     const trimmedQuery = query.trim();
 
@@ -232,26 +238,12 @@ function SoundClusterApp() {
 
     setItunesSearchStatus("loading");
     setItunesSearchMessage("Searching iTunes...");
-    setDebugResponse((previousResponse) => ({
-      ...previousResponse,
-      itunes: {
-        body: { title: trimmedQuery },
-        status: "loading",
-      },
-    }));
 
     try {
       const response = await fetchItunesTracks(trimmedQuery, "");
 
       setItunesItems(response.items);
       setItunesSearchStatus("idle");
-      setDebugResponse((previousResponse) => ({
-        ...previousResponse,
-        itunes: {
-          body: response,
-          status: "success",
-        },
-      }));
       setItunesSearchMessage(
         response.items.length > 0
           ? `${response.items.length} tracks found.`
@@ -262,13 +254,6 @@ function SoundClusterApp() {
 
       setItunesItems([]);
       setItunesSearchStatus("error");
-      setDebugResponse((previousResponse) => ({
-        ...previousResponse,
-        itunes: {
-          body: { error: errorMessage },
-          status: "error",
-        },
-      }));
       setItunesSearchMessage(errorMessage);
     }
   }, []);
@@ -399,7 +384,7 @@ function SoundClusterApp() {
           <small data-status={debugPanelStatus}>{debugPanelStatus}</small>
         </span>
         <span className={styles.responseDebugLabel}>
-          iTunes / LRCLIB / Gemini
+          LRCLIB / Gemini
         </span>
         <pre>{JSON.stringify(debugPanelBody, null, 2)}</pre>
       </aside>
@@ -421,6 +406,29 @@ function SoundClusterApp() {
             <strong>{selectedTrack.title}</strong>
             <span>{selectedTrack.artist}</span>
           </span>
+          <button
+            aria-label="Remove selected track"
+            className={styles.selectedTrackRemoveButton}
+            onClick={removeSelectedTrack}
+            title="Remove selected track"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="18"
+              viewBox="0 0 24 24"
+              width="18"
+            >
+              <path
+                d="M9 4h6m-8 4h10m-9 0 .7 11h6.6L16 8M10 11v5m4-5v5"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </button>
         </aside>
       ) : null}
       <ShareModal

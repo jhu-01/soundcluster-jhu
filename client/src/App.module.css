@@ -158,7 +158,7 @@
   bottom: 18px;
   z-index: 10;
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: 54px minmax(0, 1fr) 38px;
   gap: 12px;
   align-items: center;
   width: min(390px, calc(100vw - 420px));
@@ -174,9 +174,43 @@
     var(--panel-top-highlight),
     0 16px 36px rgba(0, 0, 0, 0.34),
     0 0 28px rgba(139, 108, 255, 0.2);
-  pointer-events: none;
+  pointer-events: auto;
   transform: translateX(-50%);
   backdrop-filter: blur(18px);
+}
+
+.selectedTrackRemoveButton {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(173, 190, 220, 0.14);
+  border-radius: 12px;
+  color: rgba(247, 248, 255, 0.72);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.selectedTrackRemoveButton:hover {
+  border-color: rgba(255, 119, 149, 0.52);
+  color: #ff9db4;
+  background: rgba(255, 77, 118, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(255, 77, 118, 0.18);
+  transform: translateY(-1px);
+}
+
+.selectedTrackRemoveButton:focus-visible {
+  outline: 2px solid rgba(110, 231, 249, 0.78);
+  outline-offset: 3px;
 }
 
 .selectedTrackImage,
@@ -337,7 +371,7 @@
   }
 
   .selectedTrackHud {
-    grid-template-columns: 46px minmax(0, 1fr);
+    grid-template-columns: 46px minmax(0, 1fr) 36px;
     min-width: 0;
     padding: 9px;
   }
@@ -346,6 +380,11 @@
   .selectedTrackFallback {
     width: 46px;
     height: 46px;
+  }
+
+  .selectedTrackRemoveButton {
+    width: 36px;
+    height: 36px;
   }
 }
 
