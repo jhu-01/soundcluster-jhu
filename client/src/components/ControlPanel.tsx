@@ -40,6 +40,8 @@ export function ControlPanel({
             <input
               checked={isChecked}
               disabled={isLocked}
+              id={`axis-${axis.key}`}
+              name={`axis-${axis.key}`}
               onChange={() => onToggleAxis(axis.key)}
               type="checkbox"
             />

@@ -40,8 +40,12 @@ const DEFAULT_VISUAL_FRAME: AnalyzeStreamVisualFrame = {
   orbitSpeed: 0.08,
   color: "#5eead4",
 };
-const CANVAS_DPR: [number, number] = [1, 1.5];
-const CANVAS_GL = { antialias: true, alpha: false };
+const CANVAS_DPR: [number, number] = [1, 1];
+const CANVAS_GL = {
+  antialias: false,
+  alpha: false,
+  powerPreference: "high-performance",
+} as const;
 const CAMERA_FOV = 48;
 const RELATION_COLORS = {
   farthest: "#fb7185",
@@ -52,9 +56,9 @@ const RELATION_LINE_WIDTH = 2;
 const STAR_FIELD_CONFIG = {
   radius: 64,
   depth: 34,
-  count: 1400,
+  count: 500,
   factor: 4,
-  speed: 0.35,
+  speed: 0.2,
 } as const;
 
 interface BaseTrackPoint extends StarNodeData {
@@ -205,16 +209,22 @@ function TrackNodes({
   const groupRef = useRef<Group>(null);
   const visual = state.latestEvent?.visual ?? DEFAULT_VISUAL_FRAME;
   const isFinal = state.status === "done";
+  const activeTrackCount = Math.min(
+    Math.max(visual.activeNodeCount, 1),
+    tracks.length,
+  );
+  const activeTracks = useMemo(() => {
+    return tracks.slice(0, activeTrackCount);
+  }, [activeTrackCount, tracks]);
   const baseTrackPoints = useMemo(() => {
-    return createBaseTrackPoints(tracks, axisSelection);
-  }, [axisSelection, tracks]);
+    return createBaseTrackPoints(activeTracks, axisSelection);
+  }, [activeTracks, axisSelection]);
   const trackPoints = useMemo(() => {
     return createTrackPoints(baseTrackPoints, visual, isFinal, relation);
   }, [baseTrackPoints, isFinal, relation, visual]);
-  const activeNodeCount = Math.min(visual.activeNodeCount, trackPoints.length);
   const visibleTrackPoints = useMemo(() => {
-    return trackPoints.slice(0, activeNodeCount);
-  }, [activeNodeCount, trackPoints]);
+    return trackPoints;
+  }, [trackPoints]);
   const relationLines = useMemo(() => {
     return createRelationLines(visibleTrackPoints, relation);
   }, [relation, visibleTrackPoints]);

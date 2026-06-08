@@ -45,12 +45,16 @@ export function ItunesSearchPanel({ onSelectTrack }: ItunesSearchPanelProps) {
       <form className={styles.form} onSubmit={handleSearch}>
         <input
           aria-label="Track title"
+          id="itunes-title"
+          name="itunes-title"
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Track title"
           value={title}
         />
         <input
           aria-label="Artist"
+          id="itunes-artist"
+          name="itunes-artist"
           onChange={(event) => setArtist(event.target.value)}
           placeholder="Artist"
           value={artist}

@@ -1,4 +1,3 @@
-import { Billboard, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
 import { Color, Vector3 } from "three";
@@ -27,8 +26,7 @@ const NODE_HOVER_SPEED = 8.5;
 const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
 const NEON_HOVER_COLOR = "#67e8f9";
-const LABEL_COLOR = "#d7fff7";
-const LABEL_HOVER_COLOR = "#ffffff";
+const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 18, 18];
 
 const createEntryPosition = (index: number): Vector3 => {
   const angle = index * 2.3999632297;
@@ -99,7 +97,7 @@ export function StarNode({
       }}
     >
       <mesh ref={meshRef} scale={node.scale}>
-        <sphereGeometry args={[1, 32, 32]} />
+        <sphereGeometry args={NODE_GEOMETRY_ARGS} />
         <meshStandardMaterial
           ref={materialRef}
           color={node.color}
@@ -108,20 +106,6 @@ export function StarNode({
           roughness={0.28}
         />
       </mesh>
-      <Billboard follow position={[0, 0.64, 0]}>
-        <Text
-          anchorX="center"
-          anchorY="middle"
-          color={isHovered || isSelected ? LABEL_HOVER_COLOR : LABEL_COLOR}
-          fontSize={0.22}
-          maxWidth={1.6}
-          outlineColor="#03110f"
-          outlineWidth={0.018}
-          textAlign="center"
-        >
-          {node.artist}
-        </Text>
-      </Billboard>
     </group>
   );
 }

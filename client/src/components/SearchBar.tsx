@@ -99,7 +99,9 @@ export function SearchBar() {
         <label className={styles.field}>
           <span>Title</span>
           <input
+            id="analysis-title"
             maxLength={MAX_TEXT_LENGTHS.title}
+            name="title"
             onChange={(event) => updateField("title", event.target.value)}
             placeholder="Track title"
             value={formState.title}
@@ -108,7 +110,9 @@ export function SearchBar() {
         <label className={styles.field}>
           <span>Artist</span>
           <input
+            id="analysis-artist"
             maxLength={MAX_TEXT_LENGTHS.artist}
+            name="artist"
             onChange={(event) => updateField("artist", event.target.value)}
             placeholder="Artist"
             value={formState.artist}
@@ -118,7 +122,9 @@ export function SearchBar() {
       <label className={styles.field}>
         <span>Lyrics</span>
         <textarea
+          id="analysis-lyrics"
           maxLength={MAX_TEXT_LENGTHS.lyrics}
+          name="lyrics"
           onChange={(event) => updateField("lyrics", event.target.value)}
           placeholder="Optional lyrics context"
           rows={3}
