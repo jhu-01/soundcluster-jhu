@@ -1,9 +1,10 @@
 import { StarNode } from "./StarNode";
-import type { StarNodeData } from "./StarNode";
+import type { StarNodeData, StarNodeRelationRole } from "./StarNode";
 
 interface StarNodeCollectionProps {
   nodes: StarNodeData[];
   selectedNodeId: string | null;
+  relationRoles: ReadonlyMap<string, StarNodeRelationRole>;
   onPreviewNode: (node: StarNodeData | null) => void;
   onSelectNode: (node: StarNodeData) => void;
 }
@@ -11,6 +12,7 @@ interface StarNodeCollectionProps {
 export function StarNodeCollection({
   nodes,
   selectedNodeId,
+  relationRoles,
   onPreviewNode,
   onSelectNode,
 }: StarNodeCollectionProps) {
@@ -24,6 +26,7 @@ export function StarNodeCollection({
           node={node}
           onPreview={onPreviewNode}
           onSelect={onSelectNode}
+          relationRole={relationRoles.get(node.id) ?? null}
         />
       ))}
     </group>

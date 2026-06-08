@@ -17,12 +17,15 @@ export interface StarNodeData {
   intensity: number;
 }
 
+export type StarNodeRelationRole = "selected" | "nearest" | "farthest";
+
 interface StarNodeProps {
   index: number;
   isSelected: boolean;
   node: StarNodeData;
   onPreview: (node: StarNodeData | null) => void;
   onSelect: (node: StarNodeData) => void;
+  relationRole: StarNodeRelationRole | null;
 }
 
 const NODE_SETTLE_SPEED = 2.8;
@@ -31,7 +34,7 @@ const ENTRY_RADIUS = 7.4;
 const ENTRY_HEIGHT_STEP = 0.54;
 const NEON_HOVER_COLOR = "#67e8f9";
 const NODE_GEOMETRY_ARGS: [number, number, number] = [1, 12, 12];
-const NODE_MARKER_SCALE = 0.92;
+const NODE_MARKER_SCALE = 0.76;
 
 const createFallbackLabel = (title: string): string => {
   return title.slice(0, 2).toUpperCase();
@@ -51,6 +54,7 @@ export function StarNode({
   node,
   onPreview,
   onSelect,
+  relationRole,
 }: StarNodeProps) {
   const groupRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
@@ -72,8 +76,8 @@ export function StarNode({
 
     const settleEasing = 1 - Math.exp(-NODE_SETTLE_SPEED * delta);
     const hoverEasing = 1 - Math.exp(-NODE_HOVER_SPEED * delta);
-    const isHighlighted = isHovered || isSelected;
-    const targetScale = node.scale * NODE_MARKER_SCALE * (isHighlighted ? 1.28 : 1);
+    const isHighlighted = isHovered || isSelected || Boolean(relationRole);
+    const targetScale = node.scale * NODE_MARKER_SCALE * (isHighlighted ? 1.2 : 1);
     const nextScale = mesh.scale.x + (targetScale - mesh.scale.x) * hoverEasing;
 
     group.position.lerp(targetPosition, settleEasing);
@@ -116,9 +120,13 @@ export function StarNode({
           roughness={0.12}
         />
       </mesh>
-      {isHovered ? (
+      {isHovered || relationRole ? (
         <Html center distanceFactor={7} position={[0, 0.66, 0]} zIndexRange={[24, 0]}>
-          <aside className={styles.popup} aria-label="Track hover details">
+          <aside
+            className={styles.popup}
+            data-role={relationRole ?? "hover"}
+            aria-label="Track hover details"
+          >
             {node.albumImageUrl ? (
               <img
                 alt={`${node.title} album cover`}

@@ -24,7 +24,7 @@ import type { TrackRelationSummary } from "../utils/trackRelations";
 import { GridBase } from "./GridBase";
 import { StarField } from "./StarField";
 import { StarNodeCollection } from "./StarNodeCollection";
-import type { StarNodeData } from "./StarNode";
+import type { StarNodeData, StarNodeRelationRole } from "./StarNode";
 
 interface StarsCanvasProps {
   axisSelection: AxisSelection;
@@ -63,24 +63,25 @@ interface BaseTrackPoint extends StarNodeData {
   baseIntensity: number;
 }
 
-const createNodeColor = (
-  trackId: string,
-  baseColor: string,
-  relation: TrackRelationSummary | null,
-): string => {
-  if (trackId === relation?.selectedTrackId) {
-    return RELATION_COLORS.selected;
+const RANDOM_TRACK_COLOR_SATURATION = 88;
+const RANDOM_TRACK_COLOR_LIGHTNESS = 62;
+const HUE_RANGE = 360;
+
+const createStringHash = (value: string): number => {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
   }
 
-  if (trackId === relation?.nearestTrackId) {
-    return RELATION_COLORS.nearest;
-  }
+  return hash >>> 0;
+};
 
-  if (trackId === relation?.farthestTrackId) {
-    return RELATION_COLORS.farthest;
-  }
+const createTrackColor = (track: ClusterShareTrack): string => {
+  const colorSeed = `${track.id}:${track.title}:${track.artist}`;
+  const hue = createStringHash(colorSeed) % HUE_RANGE;
 
-  return baseColor;
+  return `hsl(${hue} ${RANDOM_TRACK_COLOR_SATURATION}% ${RANDOM_TRACK_COLOR_LIGHTNESS}%)`;
 };
 
 const createNodeIntensity = (
@@ -112,6 +113,7 @@ const createBaseTrackPoints = (
 
   return tracks.map((track, index) => {
     const point = mappedPoints[index];
+    const trackColor = createTrackColor(track);
 
     return {
       id: track.id,
@@ -119,9 +121,9 @@ const createBaseTrackPoints = (
       title: track.title,
       artist: track.artist,
       position: new Vector3(...positions[index]),
-      baseColor: point.color,
+      baseColor: trackColor,
       baseIntensity: point.intensity,
-      color: point.color,
+      color: trackColor,
       scale: point.scale,
       intensity: point.intensity,
     };
@@ -144,11 +146,27 @@ const createTrackPoints = (
       title: point.title,
       artist: point.artist,
       position: point.position,
-      color: createNodeColor(point.id, baseColor, relation),
+      color: baseColor,
       scale: point.scale,
       intensity: createNodeIntensity(point.id, baseIntensity, relation),
     };
   });
+};
+
+const createRelationRoleMap = (
+  relation: TrackRelationSummary | null,
+): ReadonlyMap<string, StarNodeRelationRole> => {
+  const roleMap = new Map<string, StarNodeRelationRole>();
+
+  if (!relation) {
+    return roleMap;
+  }
+
+  roleMap.set(relation.selectedTrackId, "selected");
+  roleMap.set(relation.nearestTrackId, "nearest");
+  roleMap.set(relation.farthestTrackId, "farthest");
+
+  return roleMap;
 };
 
 const createRelationLines = (
@@ -221,6 +239,9 @@ function TrackNodes({
   const relationLines = useMemo(() => {
     return createRelationLines(visibleTrackPoints, relation);
   }, [relation, visibleTrackPoints]);
+  const relationRoles = useMemo(() => {
+    return createRelationRoleMap(relation);
+  }, [relation]);
 
   return (
     <group>
@@ -245,6 +266,7 @@ function TrackNodes({
         nodes={visibleTrackPoints}
         onPreviewNode={(node) => onPreviewTrack(node?.id ?? null)}
         onSelectNode={(node) => onSelectTrack(node.id)}
+        relationRoles={relationRoles}
         selectedNodeId={selectedTrackId}
       />
     </group>

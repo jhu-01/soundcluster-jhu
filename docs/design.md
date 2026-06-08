@@ -25,6 +25,10 @@ Reference image: `C:/Users/JEONG/Downloads/ChatGPT Image 2026년 6월 8일 오�
 - Changing selected track must not overwrite any other track emotion vector.
 - Selection changes recompute nearest/farthest relations while preserving every existing track node.
 - Draw nearest relation as a solid line and farthest relation as a dotted or dashed line from the selected song.
+- Song marker colors are stable-random by track identity so adjacent tracks can be visually distinguished.
+- Selected, nearest, and farthest tracks keep their metadata popups pinned.
+- Hovering any non-pinned track temporarily shows the same metadata popup.
+- Pinned relation popups use gradient borders to distinguish selected, nearest, and farthest states.
 - The central scene should prioritize a sparse 3D coordinate volume, faint grid/axis lines, and readable glowing nodes.
 
 ## Concrete Style Rules
