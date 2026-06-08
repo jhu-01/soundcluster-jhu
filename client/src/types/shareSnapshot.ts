@@ -1,4 +1,4 @@
-import type { EmotionVector } from "../../../shared/types/musicAnalysis";
+import type { EmotionVector } from "../../../shared/types/musicAnalysis.js";
 
 export type Vector3Tuple = [number, number, number];
 
