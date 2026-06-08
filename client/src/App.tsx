@@ -125,6 +125,7 @@ function SoundClusterApp() {
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [selectedEmotionPanelTrackId, setSelectedEmotionPanelTrackId] =
     useState<string | null>(null);
+  const [responseDebugOpacity, setResponseDebugOpacity] = useState(0.82);
   const [itunesItems, setItunesItems] = useState<ItunesTrackMetadata[]>([]);
   const [itunesSearchStatus, setItunesSearchStatus] =
     useState<ItunesSearchStatus>("idle");
@@ -466,7 +467,13 @@ function SoundClusterApp() {
         onExtractTrack={extractItunesTrack}
         status={itunesSearchStatus}
       />
-      <aside className={styles.responseDebugPanel} aria-label="API response debug">
+      <aside
+        className={styles.responseDebugPanel}
+        aria-label="API response debug"
+        style={
+          { "--response-debug-opacity": responseDebugOpacity } as CSSProperties
+        }
+      >
         <span className={styles.responseDebugHeader}>
           <strong>Response</strong>
           <small data-status={debugPanelStatus}>{debugPanelStatus}</small>
@@ -474,6 +481,22 @@ function SoundClusterApp() {
         <span className={styles.responseDebugLabel}>
           LRCLIB / Gemini
         </span>
+        <label className={styles.responseDebugOpacityControl}>
+          <span>Opacity</span>
+          <input
+            aria-label="Response debug opacity"
+            id="response-debug-opacity"
+            max="1"
+            min="0.18"
+            name="response-debug-opacity"
+            onChange={(event) =>
+              setResponseDebugOpacity(Number(event.currentTarget.value))
+            }
+            step="0.01"
+            type="range"
+            value={responseDebugOpacity}
+          />
+        </label>
         <pre>{JSON.stringify(debugPanelBody, null, 2)}</pre>
       </aside>
       {selectedTrack ? (

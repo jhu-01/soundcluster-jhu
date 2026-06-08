@@ -1,12 +1,12 @@
 .panel {
   position: fixed;
-  top: 50%;
+  top: 104px;
   left: 16px;
   z-index: 8;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   width: min(320px, calc(100vw - 32px));
-  max-height: min(660px, calc(100svh - 170px));
+  max-height: min(660px, calc(100svh - 128px));
   overflow: hidden;
   border: 1px solid rgba(173, 190, 220, 0.14);
   border-radius: var(--radius-panel);
@@ -17,7 +17,6 @@
   box-shadow:
     var(--panel-top-highlight),
     0 20px 52px rgba(0, 0, 0, 0.36);
-  transform: translateY(-50%);
   backdrop-filter: blur(20px);
 }
 
