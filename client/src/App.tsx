@@ -1,9 +1,18 @@
-import { useCallback, useMemo, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { ANALYZE_CACHE_HIT_MESSAGE } from "../../shared/constants/analyzeStream";
-import { StarsCanvas } from "./canvas/StarsCanvas";
+import type { MusicAnalysisResponse } from "../../shared/types/musicAnalysis";
 import { ControlPanel } from "./components/ControlPanel";
 import { SearchBar } from "./components/SearchBar";
+import { ShareModal } from "./components/ShareModal";
+import { SnapshotDebugPanel } from "./components/SnapshotDebugPanel";
 import { StreamingLogViewer } from "./components/StreamingLogViewer";
 import {
   DEFAULT_AXIS_SELECTION,
@@ -14,18 +23,120 @@ import {
 } from "./constants/emotionControls";
 import { AnalysisProvider } from "./context/AnalysisProvider";
 import { useAnalysis } from "./context/AnalysisContext";
+import { mockTracks } from "./data/mockTracks";
 import styles from "./App.module.css";
+import type {
+  ClusterShareSnapshot,
+  ClusterShareTrack,
+} from "./types/shareSnapshot";
+import {
+  createShareSnapshotUrl,
+  readShareSnapshotFromLocation,
+} from "./utils/shareSnapshot";
+
+const StarsCanvas = lazy(() =>
+  import("./canvas/StarsCanvas").then((module) => ({
+    default: module.StarsCanvas,
+  })),
+);
 
 const countActiveAxes = (axisSelection: AxisSelection): number => {
   return Object.values(axisSelection).filter(Boolean).length;
 };
 
+const createDefaultSnapshot = (): ClusterShareSnapshot => {
+  return {
+    version: 1,
+    selectedTrackId: null,
+    cameraPosition: [6.4, 4.8, 7.6],
+    cameraTarget: [0, 0, 0],
+    tracks: mockTracks,
+  };
+};
+
+const clampUnitValue = (value: number): number => {
+  return Math.max(0, Math.min(1, value));
+};
+
+const findSelectedTrack = (
+  tracks: ClusterShareTrack[],
+  selectedTrackId: string | null,
+): ClusterShareTrack | null => {
+  if (!selectedTrackId) {
+    return tracks[0] ?? null;
+  }
+
+  return tracks.find((track) => track.id === selectedTrackId) ?? tracks[0] ?? null;
+};
+
+const createMutatedSnapshot = (
+  snapshot: ClusterShareSnapshot,
+): ClusterShareSnapshot => {
+  const targetTrackId = snapshot.selectedTrackId ?? snapshot.tracks[0]?.id;
+
+  return {
+    ...snapshot,
+    selectedTrackId: targetTrackId ?? null,
+    tracks: snapshot.tracks.map((track) => {
+      if (track.id !== targetTrackId) {
+        return track;
+      }
+
+      return {
+        ...track,
+        emotions: {
+          ...track.emotions,
+          energy: clampUnitValue(track.emotions.energy + 0.11),
+          valence: clampUnitValue(track.emotions.valence - 0.09),
+          tension: clampUnitValue(track.emotions.tension + 0.13),
+        },
+      };
+    }),
+  };
+};
+
+const applyAnalysisResultToSnapshot = (
+  snapshot: ClusterShareSnapshot,
+  result: MusicAnalysisResponse,
+): ClusterShareSnapshot => {
+  const targetTrackId = snapshot.selectedTrackId ?? snapshot.tracks[0]?.id;
+
+  if (!targetTrackId) {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    selectedTrackId: targetTrackId,
+    tracks: snapshot.tracks.map((track) => {
+      if (track.id !== targetTrackId) {
+        return track;
+      }
+
+      return {
+        ...track,
+        emotions: result.emotions,
+      };
+    }),
+  };
+};
+
 function SoundClusterApp() {
   const { state } = useAnalysis();
+  const initialSnapshot = useMemo(() => {
+    return readShareSnapshotFromLocation(window.location.search);
+  }, []);
+  const [snapshot, setSnapshot] = useState<ClusterShareSnapshot>(
+    initialSnapshot ?? createDefaultSnapshot(),
+  );
   const [axisSelection, setAxisSelection] = useState<AxisSelection>(
     DEFAULT_AXIS_SELECTION,
   );
-  const activeEmotions = state.result?.emotions ?? DEFAULT_EMOTION_VECTOR;
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const selectedTrack = useMemo(() => {
+    return findSelectedTrack(snapshot.tracks, snapshot.selectedTrackId);
+  }, [snapshot.selectedTrackId, snapshot.tracks]);
+  const activeEmotions = selectedTrack?.emotions ?? DEFAULT_EMOTION_VECTOR;
   const isCacheHit = useMemo(() => {
     return state.events.some((event) => event.message === ANALYZE_CACHE_HIT_MESSAGE);
   }, [state.events]);
@@ -43,13 +154,38 @@ function SoundClusterApp() {
       };
     });
   }, []);
+  const mutateSnapshot = useCallback(() => {
+    const nextSnapshot = createMutatedSnapshot(snapshot);
+
+    window.history.replaceState(
+      null,
+      "",
+      createShareSnapshotUrl(nextSnapshot, window.location.href),
+    );
+    setSnapshot(nextSnapshot);
+  }, [snapshot]);
+
+  useEffect(() => {
+    if (!state.result) {
+      return;
+    }
+
+    setSnapshot((currentSnapshot) => {
+      return applyAnalysisResultToSnapshot(currentSnapshot, state.result);
+    });
+  }, [state.result]);
 
   return (
     <main className={styles.shell}>
-      <StarsCanvas
-        activeEmotions={activeEmotions}
-        axisSelection={axisSelection}
-      />
+      <Suspense
+        fallback={<div className={styles.canvasFallback}>Loading 3D space</div>}
+      >
+        <StarsCanvas
+          axisSelection={axisSelection}
+          onSnapshotChange={setSnapshot}
+          snapshot={snapshot}
+        />
+      </Suspense>
       <div className={styles.hud}>
         <SearchBar />
         <ControlPanel
@@ -66,6 +202,24 @@ function SoundClusterApp() {
           />
         </div>
       </div>
+      <button
+        className={styles.shareButton}
+        onClick={() => setIsShareOpen(true)}
+        type="button"
+      >
+        Share
+      </button>
+      {import.meta.env.DEV ? (
+        <SnapshotDebugPanel
+          onMutateSnapshot={mutateSnapshot}
+          snapshot={snapshot}
+        />
+      ) : null}
+      <ShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        snapshot={snapshot}
+      />
     </main>
   );
 }

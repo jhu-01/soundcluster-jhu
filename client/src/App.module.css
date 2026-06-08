@@ -10,6 +10,16 @@
   display: block;
 }
 
+.canvasFallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #d9fffb;
+  background: #06120f;
+  font-weight: 800;
+}
+
 .hud {
   position: absolute;
   inset: 16px;
@@ -29,6 +39,22 @@
 
 .stream {
   grid-column: 1;
+}
+
+.shareButton {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 10;
+  min-width: 92px;
+  padding: 10px 14px;
+  border: 1px solid rgba(94, 234, 212, 0.38);
+  border-radius: 6px;
+  color: #e6fffb;
+  background: rgba(6, 18, 15, 0.82);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  font-weight: 800;
+  cursor: pointer;
 }
 
 @media (max-width: 760px) {
