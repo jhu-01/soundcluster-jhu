@@ -117,6 +117,10 @@ const createBaseTrackPoints = (
   tracks: ClusterShareTrack[],
   axisSelection: AxisSelection,
 ): BaseTrackPoint[] => {
+  if (tracks.length === 0) {
+    return [];
+  }
+
   const vectors = tracks.map((track) => track.emotions);
   const positions = projectEmotionVectorsByAxes(vectors, axisSelection);
   const mappedPoints = mapEmotionVectorsToScenePointData(vectors);

@@ -56,6 +56,10 @@ const mean = (values: number[]): number => {
 };
 
 const createCenteredKernel = (squaredDistances: number[][]): number[][] => {
+  if (squaredDistances.length === 0) {
+    return [];
+  }
+
   const rowMeans = squaredDistances.map(mean);
   const columnMeans = squaredDistances[0].map((_, columnIndex) => {
     return mean(squaredDistances.map((row) => row[columnIndex]));
@@ -206,6 +210,10 @@ export const projectEmotionVectorsByAxes = (
   vectors: EmotionVector[],
   axisSelection: AxisSelection,
 ): ScenePosition[] => {
+  if (vectors.length === 0) {
+    return [];
+  }
+
   const activeAxes = getActiveAxes(axisSelection);
 
   if (activeAxes.length <= 3) {
