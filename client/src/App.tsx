@@ -36,6 +36,7 @@ import {
   createShareSnapshotUrl,
   readShareSnapshotFromLocation,
 } from "./utils/shareSnapshot";
+import { createTrackRelationSummary } from "./utils/trackRelations";
 
 const StarsCanvas = lazy(() =>
   import("./canvas/StarsCanvas").then((module) => ({
@@ -170,6 +171,28 @@ function SoundClusterApp() {
   const previewTrack = useMemo(() => {
     return findTrackById(snapshot.tracks, previewTrackId);
   }, [previewTrackId, snapshot.tracks]);
+  const relation = useMemo(() => {
+    return createTrackRelationSummary(snapshot.tracks, snapshot.selectedTrackId);
+  }, [snapshot.selectedTrackId, snapshot.tracks]);
+  const previewRelationLabel = useMemo(() => {
+    if (!previewTrack || !relation) {
+      return null;
+    }
+
+    if (previewTrack.id === relation.selectedTrackId) {
+      return "Selected";
+    }
+
+    if (previewTrack.id === relation.nearestTrackId) {
+      return `Nearest ${relation.nearestDistance.toFixed(3)}`;
+    }
+
+    if (previewTrack.id === relation.farthestTrackId) {
+      return `Farthest ${relation.farthestDistance.toFixed(3)}`;
+    }
+
+    return null;
+  }, [previewTrack, relation]);
   const activeEmotions = selectedTrack?.emotions ?? DEFAULT_EMOTION_VECTOR;
   const isCacheHit = useMemo(() => {
     return state.events.some((event) => event.message === ANALYZE_CACHE_HIT_MESSAGE);
@@ -235,10 +258,14 @@ function SoundClusterApp() {
           axisSelection={axisSelection}
           onPreviewTrack={setPreviewTrackId}
           onSnapshotChange={setSnapshot}
+          relation={relation}
           snapshot={snapshot}
         />
       </Suspense>
-      <TrackHoverCard track={previewTrack} />
+      <TrackHoverCard
+        relationLabel={previewRelationLabel}
+        track={previewTrack}
+      />
       <div className={styles.hud}>
         <SearchBar />
         <ControlPanel

@@ -19,6 +19,7 @@
   "include": [
     "tests/**/*.ts",
     "client/src/types/shareSnapshot.ts",
+    "client/src/utils/trackRelations.ts",
     "client/src/utils/shareSnapshot.ts",
     "server/src/**/*.ts",
     "shared/**/*.ts"
