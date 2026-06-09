@@ -21,5 +21,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["client/src"]
+  "include": ["client/src"],
+  "exclude": ["client/src/**/*.test.ts", "client/src/**/*.test.tsx"]
 }
