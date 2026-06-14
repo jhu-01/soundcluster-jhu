@@ -4,7 +4,7 @@ export const GEMINI_ENV_KEYS = {
 } as const;
 
 export const GEMINI_DEFAULT_CONFIG = {
-  model: "gemini-2.5-flash",
+  model: "gemini-3.5-flash",
 } as const;
 
 export const GEMINI_TEST_ROUTE = "/api/gemini/test";
