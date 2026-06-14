@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto";
 
 import { customAlphabet } from "nanoid";
-import type { RowDataPacket } from "mysql2/promise";
+import { MongoServerError } from "mongodb";
 
 import {
   DEFAULT_SHARE_CAMERA_POSITION,
   DEFAULT_SHARE_CAMERA_TARGET,
   SHARE_SNAPSHOT_ID_LENGTH,
 } from "../../../shared/constants/shareSnapshot.js";
-import { SHARE_SNAPSHOT_TABLE_NAME } from "../../../shared/constants/database.js";
+import { SHARE_SNAPSHOT_COLLECTION_NAME } from "../../../shared/constants/database.js";
 import type {
   ClusterShareSnapshot,
   ClusterShareTrack,
@@ -18,14 +18,14 @@ import {
   isClusterShareSnapshot,
   isShareSnapshotData,
 } from "../../../shared/utils/shareSnapshotValidation.js";
-import { databasePool } from "../config/db.js";
+import { getDatabase } from "../config/db.js";
 
-interface ShareSnapshotRow extends RowDataPacket {
-  snapshot_json: ClusterShareSnapshot | ShareSnapshotData | string;
-}
-
-interface ShareSnapshotIdRow extends RowDataPacket {
-  share_id: string;
+interface ShareSnapshotDocument {
+  shareId: string;
+  snapshotHash: string;
+  snapshot: ShareSnapshotData;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const SHARE_ID_ALPHABET =
@@ -90,40 +90,46 @@ const createShareSnapshotHash = (shareData: ShareSnapshotData): string => {
     .digest("hex");
 };
 
-const parseSnapshotJson = (
-  snapshotJson: ClusterShareSnapshot | ShareSnapshotData | string,
+const parseSnapshotData = (
+  snapshotData: ClusterShareSnapshot | ShareSnapshotData,
 ): ClusterShareSnapshot | null => {
-  const parsedSnapshot =
-    typeof snapshotJson === "string"
-      ? (JSON.parse(snapshotJson) as unknown)
-      : snapshotJson;
-
-  if (isShareSnapshotData(parsedSnapshot)) {
-    return createDefaultSnapshotFromData(parsedSnapshot);
+  if (isShareSnapshotData(snapshotData)) {
+    return createDefaultSnapshotFromData(snapshotData);
   }
 
-  if (isClusterShareSnapshot(parsedSnapshot)) {
-    return createDefaultSnapshotFromData(createShareSnapshotData(parsedSnapshot));
+  if (isClusterShareSnapshot(snapshotData)) {
+    return createDefaultSnapshotFromData(createShareSnapshotData(snapshotData));
   }
 
   return null;
 };
 
+const getShareSnapshotCollection = async () => {
+  const db = await getDatabase();
+
+  return db.collection<ShareSnapshotDocument>(SHARE_SNAPSHOT_COLLECTION_NAME);
+};
+
 const findShareIdByHash = async (
   snapshotHash: string,
 ): Promise<string | null> => {
-  const [rows] = await databasePool.query<ShareSnapshotIdRow[]>(
-    `SELECT share_id FROM ${SHARE_SNAPSHOT_TABLE_NAME} WHERE snapshot_hash = ? LIMIT 1`,
-    [snapshotHash],
+  const collection = await getShareSnapshotCollection();
+  const document = await collection.findOne(
+    { snapshotHash },
+    { projection: { shareId: 1 } },
   );
-  const [row] = rows;
 
-  return row?.share_id ?? null;
+  return document?.shareId ?? null;
+};
+
+const isDuplicateKeyError = (error: unknown): boolean => {
+  return error instanceof MongoServerError && error.code === 11000;
 };
 
 export const saveShareSnapshot = async (
   snapshot: ClusterShareSnapshot,
 ): Promise<string> => {
+  const collection = await getShareSnapshotCollection();
   const shareData = createShareSnapshotData(snapshot);
   const snapshotHash = createShareSnapshotHash(shareData);
   const existingShareId = await findShareIdByHash(snapshotHash);
@@ -133,18 +139,17 @@ export const saveShareSnapshot = async (
   }
 
   for (let attempt = 0; attempt < SHARE_ID_RETRY_LIMIT; attempt += 1) {
+    const now = new Date();
     const shareId = createShareId();
 
     try {
-      await databasePool.execute(
-        `INSERT INTO ${SHARE_SNAPSHOT_TABLE_NAME} (
-           share_id,
-           snapshot_hash,
-           snapshot_json
-         )
-         VALUES (?, ?, CAST(? AS JSON))`,
-        [shareId, snapshotHash, JSON.stringify(shareData)],
-      );
+      await collection.insertOne({
+        createdAt: now,
+        shareId,
+        snapshot: shareData,
+        snapshotHash,
+        updatedAt: now,
+      });
 
       return shareId;
     } catch (error: unknown) {
@@ -156,7 +161,7 @@ export const saveShareSnapshot = async (
 
       const isLastAttempt = attempt === SHARE_ID_RETRY_LIMIT - 1;
 
-      if (isLastAttempt) {
+      if (isLastAttempt || !isDuplicateKeyError(error)) {
         throw error;
       }
     }
@@ -168,15 +173,15 @@ export const saveShareSnapshot = async (
 export const findShareSnapshotById = async (
   shareId: string,
 ): Promise<ClusterShareSnapshot | null> => {
-  const [rows] = await databasePool.query<ShareSnapshotRow[]>(
-    `SELECT snapshot_json FROM ${SHARE_SNAPSHOT_TABLE_NAME} WHERE share_id = ? LIMIT 1`,
-    [shareId],
+  const collection = await getShareSnapshotCollection();
+  const document = await collection.findOne(
+    { shareId },
+    { projection: { snapshot: 1 } },
   );
-  const [row] = rows;
 
-  if (!row) {
+  if (!document) {
     return null;
   }
 
-  return parseSnapshotJson(row.snapshot_json);
+  return parseSnapshotData(document.snapshot);
 };

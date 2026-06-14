@@ -6,14 +6,14 @@ import {
   ANALYZE_CACHE_MISS_EVENTS,
 } from "../shared/constants/analyzeStream.js";
 import { mapEmotionVectorToScenePoint } from "../shared/utils/emotionToPoint.js";
-import { databasePool } from "../server/src/config/db.js";
+import { closeDatabase } from "../server/src/config/db.js";
 import { stripLrclibSyncedLyrics } from "../server/src/config/lyrics.js";
 import { createAnalysisCacheKey } from "../server/src/repositories/analysisCache.js";
 import { buildAnalysisRequest } from "../server/src/services/analyzeService.js";
 import { parseMusicAnalysisResponse } from "../server/src/validation/musicAnalysis.js";
 
 after(async () => {
-  await databasePool.end();
+  await closeDatabase();
 });
 
 describe("analysis pipeline contracts", () => {
