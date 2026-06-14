@@ -78,7 +78,7 @@ const baseMockTracks: MockTrack[] = [
   },
 ];
 
-const CLUSTER_VARIANT_COUNT = 50;
+const CLUSTER_VARIANT_COUNT = 10;
 
 const clampUnitValue = (value: number): number => {
   return Math.max(0, Math.min(1, value));

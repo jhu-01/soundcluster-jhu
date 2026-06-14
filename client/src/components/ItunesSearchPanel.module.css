@@ -23,6 +23,8 @@
 .header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-height: 58px;
   padding: 0 18px;
   border-bottom: 1px solid rgba(173, 190, 220, 0.08);
@@ -32,6 +34,43 @@
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 0;
+}
+
+.clearButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid rgba(173, 190, 220, 0.16);
+  border-radius: 9px;
+  color: rgba(247, 248, 255, 0.68);
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.clearButton:hover {
+  border-color: rgba(255, 119, 149, 0.48);
+  color: #ffb3c4;
+  background: rgba(255, 77, 118, 0.1);
+  transform: translateY(-1px);
+}
+
+.clearButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.clearButton path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
 }
 
 .status {

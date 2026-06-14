@@ -48,6 +48,8 @@
 .field input {
   height: 52px;
   padding: 0 16px;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .field input:focus {
@@ -67,16 +69,18 @@
 }
 
 .actions button {
-  min-width: 128px;
+  display: grid;
+  width: 52px;
+  min-width: 52px;
   height: 52px;
+  place-items: center;
   border: 0;
   border-radius: var(--radius-control);
-  padding: 0 18px;
+  padding: 0;
   color: var(--color-text-primary);
   background: linear-gradient(135deg, #8b5cf6, #5f35f5);
   box-shadow: 0 0 24px rgba(124, 77, 255, 0.4), 0 16px 34px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  font-weight: 800;
 }
 
 .actions button:disabled {
@@ -88,7 +92,8 @@
   min-width: 0;
   overflow: hidden;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

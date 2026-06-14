@@ -4,6 +4,7 @@ import styles from "./ItunesSearchPanel.module.css";
 interface ItunesSearchPanelProps {
   extractingTrackId: string | null;
   items: ItunesTrackMetadata[];
+  onClearResults: () => void;
   onExtractTrack: (track: ItunesTrackMetadata) => void;
   status: "idle" | "loading" | "error";
 }
@@ -11,13 +12,28 @@ interface ItunesSearchPanelProps {
 export function ItunesSearchPanel({
   extractingTrackId,
   items,
+  onClearResults,
   onExtractTrack,
   status,
 }: ItunesSearchPanelProps) {
+  const canClearResults = items.length > 0 && extractingTrackId === null;
+
   return (
     <section className={styles.panel} aria-label="iTunes search results">
       <div className={styles.header}>
         <strong>Search Results</strong>
+        {canClearResults ? (
+          <button
+            aria-label="Clear search results"
+            className={styles.clearButton}
+            onClick={onClearResults}
+            type="button"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M5 12h14" />
+            </svg>
+          </button>
+        ) : null}
       </div>
       {status === "loading" ? (
         <p className={styles.status}>Searching iTunes...</p>

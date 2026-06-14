@@ -91,17 +91,6 @@ const formatEmotionValue = (value: number): string => {
 
 type ItunesSearchStatus = "idle" | "loading" | "error";
 
-type DebugResponseStatus = "idle" | "loading" | "success" | "error";
-
-interface DebugResponseEntry {
-  body: unknown;
-  status: DebugResponseStatus;
-}
-
-interface DebugResponseState {
-  lyrics: DebugResponseEntry;
-}
-
 function SoundClusterApp() {
   const { state, startStream } = useAnalysis();
   const analysisTargetTrackIdRef = useRef<string | null>(null);
@@ -125,8 +114,9 @@ function SoundClusterApp() {
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [selectedEmotionPanelTrackId, setSelectedEmotionPanelTrackId] =
     useState<string | null>(null);
-  const [responseDebugOpacity, setResponseDebugOpacity] = useState(0.82);
+  const [clusterSearchQuery, setClusterSearchQuery] = useState("");
   const [itunesItems, setItunesItems] = useState<ItunesTrackMetadata[]>([]);
+  const [itunesSearchQuery, setItunesSearchQuery] = useState("");
   const [itunesSearchStatus, setItunesSearchStatus] =
     useState<ItunesSearchStatus>("idle");
   const [itunesSearchMessage, setItunesSearchMessage] = useState("");
@@ -134,12 +124,6 @@ function SoundClusterApp() {
   const [lyricsLookupTrackId, setLyricsLookupTrackId] = useState<string | null>(
     null,
   );
-  const [debugResponse, setDebugResponse] = useState<DebugResponseState>({
-    lyrics: {
-      body: null,
-      status: "idle",
-    },
-  });
   const visibleSnapshot = snapshot;
   const relation = useMemo(() => {
     return createTrackRelationSummary(
@@ -160,49 +144,25 @@ function SoundClusterApp() {
   }, [visibleSnapshot.selectedTrackId, visibleSnapshot.tracks]);
   const isSelectedEmotionOpen =
     selectedTrack !== null && selectedEmotionPanelTrackId === selectedTrack.id;
+  const clusterSearchMatches = useMemo(() => {
+    const normalizedQuery = clusterSearchQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return [];
+    }
+
+    return visibleSnapshot.tracks
+      .filter((track) => {
+        return (
+          track.title.toLowerCase().includes(normalizedQuery) ||
+          track.artist.toLowerCase().includes(normalizedQuery)
+        );
+      })
+      .slice(0, 6);
+  }, [clusterSearchQuery, visibleSnapshot.tracks]);
 
   const activeExtractingTrackId =
     lyricsLookupTrackId ?? (state.isActive ? extractingTrackId : null);
-  const debugPanelBody = useMemo(() => {
-    return {
-      gemini: {
-        errorMessage: state.errorMessage,
-        latestEvent: state.latestEvent,
-        request: state.request,
-        result: state.result,
-        status: state.status,
-      },
-      lrclib: debugResponse.lyrics,
-    };
-  }, [
-    debugResponse.lyrics,
-    state.errorMessage,
-    state.latestEvent,
-    state.request,
-    state.result,
-    state.status,
-  ]);
-  const debugPanelStatus = useMemo<DebugResponseStatus>(() => {
-    if (
-      debugResponse.lyrics.status === "error" ||
-      state.status === "error"
-    ) {
-      return "error";
-    }
-
-    if (state.status === "streaming" || state.status === "connecting") {
-      return "loading";
-    }
-
-    if (
-      debugResponse.lyrics.status === "success" ||
-      state.status === "done"
-    ) {
-      return "success";
-    }
-
-    return "idle";
-  }, [debugResponse.lyrics.status, state.status]);
   const ignorePreviewTrack = useCallback((trackId: string | null): void => {
     void trackId;
   }, []);
@@ -239,6 +199,7 @@ function SoundClusterApp() {
   }, []);
   const removeSelectedTrack = useCallback((): void => {
     setSelectedEmotionPanelTrackId(null);
+    setClusterSearchQuery("");
     setSnapshot((currentSnapshot) => {
       const selectedTrackId = currentSnapshot.selectedTrackId;
 
@@ -253,6 +214,14 @@ function SoundClusterApp() {
       };
     });
   }, []);
+  const selectClusterTrack = useCallback((trackId: string): void => {
+    setSelectedEmotionPanelTrackId(null);
+    setClusterSearchQuery("");
+    setSnapshot((currentSnapshot) => ({
+      ...currentSnapshot,
+      selectedTrackId: trackId,
+    }));
+  }, []);
   const resetTracks = useCallback((): void => {
     analysisTargetTrackIdRef.current = null;
     appliedAnalysisResultRef.current = null;
@@ -264,12 +233,6 @@ function SoundClusterApp() {
       selectedTrackId: null,
       tracks: [],
     }));
-    setDebugResponse({
-      lyrics: {
-        body: null,
-        status: "idle",
-      },
-    });
     setIsResetConfirmOpen(false);
   }, []);
   const searchItunesTracks = useCallback(async (query: string): Promise<void> => {
@@ -302,6 +265,12 @@ function SoundClusterApp() {
       setItunesSearchMessage(errorMessage);
     }
   }, []);
+  const clearItunesSearchResults = useCallback((): void => {
+    setItunesItems([]);
+    setItunesSearchQuery("");
+    setItunesSearchStatus("idle");
+    setItunesSearchMessage("");
+  }, []);
   const extractItunesTrack = useCallback(
     async (track: ItunesTrackMetadata): Promise<void> => {
       analysisTargetTrackIdRef.current = track.itunesTrackId;
@@ -309,16 +278,6 @@ function SoundClusterApp() {
       setExtractingTrackId(track.itunesTrackId);
       setLyricsLookupTrackId(track.itunesTrackId);
       bindItunesTrack(track);
-      setDebugResponse((previousResponse) => ({
-        ...previousResponse,
-        lyrics: {
-          body: {
-            artist: track.artist,
-            title: track.title,
-          },
-          status: "loading",
-        },
-      }));
 
       let lyrics = "";
 
@@ -326,28 +285,8 @@ function SoundClusterApp() {
         const lyricsResponse = await fetchLyrics(track.title, track.artist);
 
         lyrics = lyricsResponse.lyrics;
-        setDebugResponse((previousResponse) => ({
-          ...previousResponse,
-          lyrics: {
-            body: lyricsResponse,
-            status: "success",
-          },
-        }));
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-
-        setDebugResponse((previousResponse) => ({
-          ...previousResponse,
-          lyrics: {
-            body: {
-              artist: track.artist,
-              error: errorMessage,
-              fallback: "Gemini will analyze with title and artist only.",
-              title: track.title,
-            },
-            status: "error",
-          },
-        }));
+        void error;
       } finally {
         setLyricsLookupTrackId(null);
       }
@@ -429,17 +368,58 @@ function SoundClusterApp() {
         </div>
         <SearchBar
           message={itunesSearchMessage}
+          onQueryChange={setItunesSearchQuery}
           onSearch={searchItunesTracks}
+          query={itunesSearchQuery}
           status={itunesSearchStatus}
         />
-        <button
-          className={styles.resetButton}
-          disabled={visibleSnapshot.tracks.length === 0}
-          onClick={() => setIsResetConfirmOpen(true)}
-          type="button"
-        >
-          Reset
-        </button>
+        <div className={styles.topActions}>
+          <button
+            aria-label="Share your cluster"
+            className={styles.topShareButton}
+            onClick={() => setIsShareOpen(true)}
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="18"
+              viewBox="0 0 24 24"
+              width="18"
+            >
+              <path
+                d="M8.7 12.7 15.3 16M15.3 8 8.7 11.3M18 9.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM18 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </button>
+          <button
+            aria-label="Reset cluster"
+            className={styles.resetButton}
+            disabled={visibleSnapshot.tracks.length === 0}
+            onClick={() => setIsResetConfirmOpen(true)}
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="18"
+              viewBox="0 0 24 24"
+              width="18"
+            >
+              <path
+                d="M4 7h16M9 7V5h6v2m-8 0 .7 12h8.6L17 7M10 11v5m4-5v5"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </button>
+        </div>
       </header>
       {shareLoadMessage ? (
         <aside className={styles.shareLoadStatus}>{shareLoadMessage}</aside>
@@ -450,53 +430,13 @@ function SoundClusterApp() {
           onToggleAxis={toggleAxis}
         />
       </div>
-      <button
-        className={styles.shareButton}
-        onClick={() => setIsShareOpen(true)}
-        type="button"
-      >
-        <span className={styles.shareTitle}>Share Your Cluster</span>
-        <span className={styles.shareHint}>Current view is ready to share.</span>
-        <span className={styles.shareCta}>Share</span>
-      </button>
       <ItunesSearchPanel
         extractingTrackId={activeExtractingTrackId}
         items={itunesItems}
+        onClearResults={clearItunesSearchResults}
         onExtractTrack={extractItunesTrack}
         status={itunesSearchStatus}
       />
-      <aside
-        className={styles.responseDebugPanel}
-        aria-label="API response debug"
-        style={
-          { "--response-debug-opacity": responseDebugOpacity } as CSSProperties
-        }
-      >
-        <span className={styles.responseDebugHeader}>
-          <strong>Response</strong>
-          <small data-status={debugPanelStatus}>{debugPanelStatus}</small>
-        </span>
-        <span className={styles.responseDebugLabel}>
-          LRCLIB / Gemini
-        </span>
-        <label className={styles.responseDebugOpacityControl}>
-          <span>Opacity</span>
-          <input
-            aria-label="Response debug opacity"
-            id="response-debug-opacity"
-            max="1"
-            min="0.18"
-            name="response-debug-opacity"
-            onChange={(event) =>
-              setResponseDebugOpacity(Number(event.currentTarget.value))
-            }
-            step="0.01"
-            type="range"
-            value={responseDebugOpacity}
-          />
-        </label>
-        <pre>{JSON.stringify(debugPanelBody, null, 2)}</pre>
-      </aside>
       {selectedTrack ? (
         <aside className={styles.selectedTrackHud} aria-label="Selected track">
           {selectedTrack.albumImageUrl ? (
@@ -592,7 +532,86 @@ function SoundClusterApp() {
             </section>
           ) : null}
         </aside>
-      ) : null}
+      ) : (
+        <aside
+          className={`${styles.selectedTrackHud} ${styles.clusterSearchHud}`}
+          aria-label="Cluster track search"
+        >
+          <form
+            className={styles.clusterSearchForm}
+            onSubmit={(event) => {
+              event.preventDefault();
+              const [firstMatch] = clusterSearchMatches;
+
+              if (firstMatch) {
+                selectClusterTrack(firstMatch.id);
+              }
+            }}
+          >
+            <label className={styles.clusterSearchField}>
+              <small>Cluster Search</small>
+              <input
+                aria-label="Search tracks in cluster"
+                autoComplete="off"
+                disabled={visibleSnapshot.tracks.length === 0}
+                name="cluster-track-search"
+                onChange={(event) => setClusterSearchQuery(event.currentTarget.value)}
+                type="search"
+                value={clusterSearchQuery}
+              />
+            </label>
+            <button
+              aria-label="Search cluster"
+              disabled={
+                visibleSnapshot.tracks.length === 0 ||
+                clusterSearchQuery.trim().length === 0
+              }
+              type="submit"
+            >
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="18"
+                viewBox="0 0 24 24"
+                width="18"
+              >
+                <path
+                  d="m15.8 15.8 4.2 4.2M17.4 10.8a6.6 6.6 0 1 1-13.2 0 6.6 6.6 0 0 1 13.2 0Z"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeWidth="1.8"
+                />
+              </svg>
+            </button>
+          </form>
+          {clusterSearchMatches.length > 0 ? (
+            <section
+              aria-label="Cluster search results"
+              className={styles.clusterSearchResults}
+            >
+              {clusterSearchMatches.map((track) => (
+                <button
+                  className={styles.clusterSearchResult}
+                  key={track.id}
+                  onClick={() => selectClusterTrack(track.id)}
+                  type="button"
+                >
+                  {track.albumImageUrl ? (
+                    <img
+                      alt={`${track.title} album cover`}
+                      src={track.albumImageUrl}
+                    />
+                  ) : (
+                    <span aria-hidden="true">{createFallbackLabel(track.title)}</span>
+                  )}
+                  <strong>{track.title}</strong>
+                  <small>{track.artist}</small>
+                </button>
+              ))}
+            </section>
+          ) : null}
+        </aside>
+      )}
       {isResetConfirmOpen ? (
         <div
           aria-labelledby="reset-confirm-title"
